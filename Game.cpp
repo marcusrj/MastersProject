@@ -356,8 +356,8 @@ void Game::CreateDeviceDependentResources()
     m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
 
-	//setup our terrain
-	m_Terrain.Initialize(device, 100, 100);
+	//setup our terrain (width, height, forest Width, forest Height);
+	m_Terrain.Initialize(device, 1000, 1000,5,5);
 
 	//setup our test model
 	m_BasicModel.InitializeSphere(device);

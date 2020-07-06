@@ -17,16 +17,21 @@ private:
 		float nx, ny, nz;
 		float u, v;
 	};
+
+	struct TreeType
+	{
+		float x, y, z;
+	};
 public:
 	Terrain();
 	~Terrain();
 
-	bool Initialize(ID3D11Device*, int terrainWidth, int terrainHeight);
+	bool Initialize(ID3D11Device*, int terrainWidth, int terrainHeight, int forestWidth, int forestHeight);
 	void Render(ID3D11DeviceContext*);
 	bool GenerateHeightMap(ID3D11Device*);
 	bool Update();
 	float* GetWavelength();
-	void treePlacement();
+	void TreePlacement(int spacing, int forestX, int forestY);
 	float* GetAmplitude();
 
 private:
@@ -39,6 +44,13 @@ private:
 	void MakeSomeNoise();
 	void Faulting();
 	void Smooth();
+	void Islandify();
+
+	float Flip(float x);
+	float Spike(float t);
+	float EaseIn(float t);
+	float Lerp(float start_value, float end_value, float pct);
+
 	int fastfloor(double x);
 	double dot(int g[], double x, double y);
 
@@ -46,11 +58,12 @@ private:
 private:
 	bool m_terrainGeneratedToggle;
 	int m_terrainWidth, m_terrainHeight;
+	int m_numberTrees, m_forestWidth, m_forestHeight;
 	ID3D11Buffer * m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
 	float m_frequency, m_amplitude, m_wavelength;
 	HeightMapType* m_heightMap;
-
+	TreeType* m_trees;
 	//arrays for our generated objects Made by directX
 	std::vector<VertexPositionNormalTexture> preFabVertices;
 	std::vector<uint16_t> preFabIndices;

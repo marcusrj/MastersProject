@@ -15,22 +15,25 @@ Terrain::~Terrain()
 
 }
 
-bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeight)
+bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeight, int forestWidth, int forestHeight)
 {
 	int index;
-	float height = 0.0;
+	float height = 1.0;
 	bool result;
 
 	// Save the dimensions of the terrain.
 	m_terrainWidth = terrainWidth;
 	m_terrainHeight = terrainHeight;
-
+	m_numberTrees = forestHeight*forestHeight;
+	m_forestWidth = forestWidth;
+	m_forestHeight = forestHeight;
 	m_frequency = m_terrainWidth / 20;
 	m_amplitude = 10.0f;
 	m_wavelength = 5.f;
 
 	// Create the structure to hold the terrain data.
 	m_heightMap = new HeightMapType[m_terrainWidth * m_terrainHeight];
+	m_trees = new TreeType[m_numberTrees];
 	if (!m_heightMap)
 	{
 		return false;
@@ -287,6 +290,7 @@ void Terrain::Smooth()
 	}
 	CalculateNormals();
 }
+
 void Terrain::Shutdown()
 {
 	// Release the index buffer.
@@ -470,7 +474,7 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 	int index;
 	float height = 0.0;
 
-	m_frequency = (6.283/m_terrainHeight) / 7; //we want a wavelength of 1 to be a single wave over the whole terrain.  A single wave is 2 pi which is about 6.283
+	m_frequency = (6.283/m_terrainHeight) / 7 ; //we want a wavelength of 1 to be a single wave over the whole terrain.  A single wave is 2 pi which is about 6.283
 
 	//loop through the terrain and set the hieghts how we want. This is where we generate the terrain
 	//in this case I will run a sin-wave through the terrain in one axis.
@@ -482,15 +486,16 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
+			//m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
 			m_heightMap[index].z = (float)j;
 		}
 	}
+
+
+	
 	MakeSomeNoise();
-	
-	
-	
     Faulting();
+	Islandify();
 	//Smooth();
 
 
@@ -545,42 +550,67 @@ void Terrain::Faulting()
 {
 	int index = 0;
 	int iterations = 300;
-	float displacement = 4.f;
+	float displacement = 0.5f;
 	srand(time(0));
 
+	//loop for number of faults we want
 	for (int faults = 0; faults < iterations; faults++)
 	{
-		float v = rand();
-		float a = sin(v);
-		float b = cos(v);
-		float d = sqrt(m_terrainWidth*m_terrainWidth  + m_terrainHeight * m_terrainHeight);
 
-		float c = (rand() / RAND_MAX) * d - d / 2;
+		float X1, Y1, X2, Y2;
+		float m, c;
+
+		// 1+ so we dont go through the origin because thats bad
+		X1 = 1 + int(rand() % m_terrainWidth);
+		Y1 = 1 + int(rand() % m_terrainHeight);
+		X2 = 1 + int(rand() % m_terrainWidth);
+		Y2 = 1 + int(rand() % m_terrainHeight);
+
+		//Just in case 
+		if (Y1 - Y2 != 0)
+		{
+			m = float(X1 - X2) / (Y1 - Y2);
+		}
+		else
+		{
+			m = 0;
+		}
+
+		//Y=MX+C WE dont have c yet
+		//C=Y-MX
+		c = Y1 - m * X1;
+
+		
+		//0=MX-Y+C 
+		float val;	//if this equals zero point is on line
+
 
 		for (int j = 0; j < m_terrainHeight; j++)
 		{
 			for (int i = 0; i < m_terrainWidth; i++)
-			{
+			{	
 				
+				//val=MX-Y+C 
+				val = float((m * i) - j + c);  //if this equals zero point is on line
 				index = (m_terrainHeight * j) + i;
 				if (faults % 2 == 0)
 				{
-					if (((a*i) + (b * j) - c) > 0) 
+					if (val > 0) 
 					{
 						m_heightMap[index].y += displacement;
 					}
-					if (((a*i) + (b * j) - c) < 0)
+					if (val < 0)
 					{
 						m_heightMap[index].y -= displacement;
 					}
 				}
 				else if (faults % 2 == 1)
 				{
-					if (((a*i) + (b * j) - c) > 0) 
+					if (val > 0)
 					{
 						m_heightMap[index].y -= displacement;
 					}
-					if (((a*i) + (b * j) - c) < 0)
+					if (val < 0)
 					{
 						m_heightMap[index].y += displacement;
 					}
@@ -679,26 +709,108 @@ double Terrain::dot(int g[], double x, double y)
 }
 
 
-void Terrain::treePlacement() {
+void Terrain::TreePlacement(int spacing, int forestX, int forestY) 
+{
+	//int treeStartX, treeWidth, treeStartY, treeHeight;
+	
+	int treeIndex = 0;
 
-	int treeStartX, treeWidth, treeStartY, treeHeight;
-	int treeInitSpacing;
-	int totalTrees = treeWidth * treeHeight;
+	int heightmapIndex = 0;
+	int startX = forestX - m_forestWidth / 2;
+	int startY = forestY - m_forestHeight / 2;
+	int endX = m_forestWidth * spacing;
+	int endY = m_forestHeight * spacing;
 
-	DirectX::SimpleMath::Vector2** trees = new DirectX::SimpleMath::Vector2*[treeWidth];
-	for (int i = 0; i < treeWidth; ++i) {
-		trees[i] = new DirectX::SimpleMath::Vector2[treeHeight];
+	for (int i = startX; i < endX; i+=spacing)
+	{
+		for (int j = startY; j < endY; j+=spacing)
+		{
+
+			heightmapIndex = i * m_terrainWidth + j;
+
+			m_trees[treeIndex].x = i;
+			m_trees[treeIndex].y = m_heightMap[heightmapIndex].y;
+			m_trees[treeIndex].z = j;
+
+
+			treeIndex++;
+
+		}
 	}
-
-	//m_heightmap[][] = trees[treeStartX][treeStartY].x;
-
-
-	//USE THIS TO DELETE IT LATER
-	//Free each sub-array
-	//for (int i = 0; i < treeWidth; ++i) {
-	//	delete[] trees[i];
-	//}
-	//Free the array of pointers
-	//delete[] trees;
-
 }
+
+
+// https://www.febucci.com/2018/08/easing-functions/
+float Terrain::Flip(float x)
+{
+	return 1 - x;
+}
+
+float Terrain::EaseIn(float t)
+{
+	return (t * t);
+}
+
+float Terrain::Spike(float t)
+{
+	if (t <= .5f)
+		return EaseIn(t / .5f);
+
+	return EaseIn(Flip(t) / .5f);
+}
+
+float Terrain::Lerp(float start_value, float end_value, float pct)
+{
+	return (start_value + (end_value - start_value) * pct);
+}
+
+
+/*
+
+*/
+void Terrain::Islandify() 
+{
+
+
+	float t1 = 0;
+	float t2 = 0;
+	float inc1 = 1 / float(m_terrainWidth);
+	float inc2 = 1 / float(m_terrainHeight);
+	int index = 0;
+
+	for (int x = 0; x < m_terrainWidth; x++)
+	{
+		//m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t2));
+
+		for (int y = 0; y <m_terrainHeight ; y++)
+		{
+			m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t1));
+			
+			t1 += inc1;
+			index++;
+		}
+		//t2 += inc2;
+		t1 = 0;
+	}
+	index = 0;
+	for (int y = 0; y < m_terrainHeight; y++)
+	{
+		//m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t2));
+
+		for (int x = 0; x < m_terrainWidth; x++)
+		{
+			m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t2));
+			
+			t2 += inc2;
+			index += m_terrainHeight;
+		}
+		//t2 += inc2;
+		
+		t2 = 0;
+		index = y;
+	}
+}
+
+
+
+
