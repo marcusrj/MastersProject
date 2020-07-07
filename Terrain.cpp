@@ -487,6 +487,7 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 
 			m_heightMap[index].x = (float)i;
 			//m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
+			m_heightMap[index].y = 1;
 			m_heightMap[index].z = (float)j;
 		}
 	}
@@ -538,7 +539,7 @@ void Terrain::MakeSomeNoise()
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			m_heightMap[index].y = m_heightMap[index].y - (float)SimplexNoise((double)i * m_wavelength, (double)j *  m_wavelength) * m_amplitude;
+			m_heightMap[index].y = m_heightMap[index].y + (float)SimplexNoise((double)i * m_wavelength, (double)j *  m_wavelength) * m_amplitude;
 			m_heightMap[index].z = (float)j;
 		}
 	}
@@ -550,7 +551,7 @@ void Terrain::Faulting()
 {
 	int index = 0;
 	int iterations = 300;
-	float displacement = 0.5f;
+	float displacement = 0.1f;
 	srand(time(0));
 
 	//loop for number of faults we want

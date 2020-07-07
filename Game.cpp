@@ -171,6 +171,7 @@ void Game::Update(DX::StepTimer const& timer)
 
 	m_Camera01.Update();	//camera update.
 	m_Terrain.Update();		//terrain update.  doesnt do anything at the moment. 
+	
 
 	m_view = m_Camera01.getCameraMatrix();
 	m_world = Matrix::Identity;
@@ -239,7 +240,7 @@ void Game::Render()
 	context->RSSetState(m_states->CullClockwise());
 //	context->RSSetState(m_states->Wireframe());
 
-	//prepare transform for floor object. 
+	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -15.6f, 0.0f);
 	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1);		//scale the terrain down a little. 
@@ -250,6 +251,19 @@ void Game::Render()
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
 	m_Terrain.Render(context);
 	
+
+
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -14.6f, 10.0f);
+	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
+	m_world = m_world * newScale *newPosition3;
+
+	m_BasicShaderPair.EnableShader(context);
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+
+	m_BasicModel3.Render(context);
+
+
 	//render our GUI
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -369,7 +383,7 @@ void Game::CreateDeviceDependentResources()
 
 	//load Textures
 	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
-	CreateDDSTextureFromFile(device, L"EvilDrone_Diff.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"water.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
 
 	//Initialise Render to texture
 	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
