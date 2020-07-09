@@ -550,8 +550,10 @@ void Terrain::MakeSomeNoise()
 void Terrain::Faulting()
 {
 	int index = 0;
-	int iterations = 300;
+	int iterations = 3000;
+	
 	float displacement = 0.1f;
+	float displacementInc = 0.1f / iterations;
 	srand(time(0));
 
 	//loop for number of faults we want
@@ -618,8 +620,11 @@ void Terrain::Faulting()
 				}
 				//m_heightMap[index].x = (float)i;
 				//m_heightMap[index].z = (float)j;
+				
 			}
+			
 		}
+		displacement -= displacementInc;
 	}
 
 	

@@ -254,7 +254,7 @@ void Game::Render()
 
 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -14.6f, 10.0f);
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -15.0f, 10.0f);
 	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
 	m_world = m_world * newScale *newPosition3;
 
