@@ -77,6 +77,7 @@ void Game::Initialize(HWND window, int width, int height)
 	m_Camera01.setPosition(Vector3(0.0f, 0.0f, 4.0f));
 	m_Camera01.setRotation(Vector3(-90.0f, -180.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
 
+
 	
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -166,7 +167,16 @@ void Game::Update(DX::StepTimer const& timer)
 
 	if (m_gameInputCommands.generate)
 	{
+		//int treecount = m_Terrain.getNumberTrees();
+		//m_treeModels = new ModelClass[treecount];
+		//m_trees = m_Terrain.getTrees();
 		m_Terrain.GenerateHeightMap(device);
+		
+
+		//for (int i = 0; i < treecount; i++)
+		//{
+		//	m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
+		//}
 	}
 
 	m_Camera01.Update();	//camera update.
@@ -246,13 +256,13 @@ void Game::Render()
 	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1);		//scale the terrain down a little. 
 	m_world = m_world * newScale *newPosition3;
 
-	//setup and draw cube
+	
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
-	m_Terrain.Render(context);
+	//m_Terrain.Render(context);
 	
 
-
+	//Sea
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -15.0f, 10.0f);
 	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
@@ -261,7 +271,30 @@ void Game::Render()
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
 
-	m_BasicModel3.Render(context);
+	//m_BasicModel3.Render(context);
+
+	//trees
+	
+		m_world = SimpleMath::Matrix::Identity; //set world back to identity
+
+		int treeCount = m_Terrain.getNumberTrees();
+
+		for (int i = 0; i < treeCount-1; i++)
+		{
+			int tempX = m_trees[i].x;
+			int tempY = m_trees[i].y;
+			int tempZ = m_trees[i].z;
+
+
+			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX/100, tempY-5.f, tempZ/100);
+			newScale = SimpleMath::Matrix::CreateScale(1);
+			m_world = m_world * newScale *newPosition3;
+
+			m_BasicShaderPair.EnableShader(context);
+			m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+
+			m_treeModels[i].Render(context);
+		}
 
 
 	//render our GUI
@@ -373,6 +406,16 @@ void Game::CreateDeviceDependentResources()
 	//setup our terrain (width, height, forest Width, forest Height);
 	m_Terrain.Initialize(device, 1000, 1000,5,5);
 
+	
+	int treecount = m_Terrain.getNumberTrees();
+	m_treeModels = new ModelClass[treecount];
+	m_Terrain.TreePlacement(1,500,500);
+	m_trees = m_Terrain.getTrees();
+	for (size_t i = 0; i < treecount; i++)
+	{
+		m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
+	}
+	
 	//setup our test model
 	m_BasicModel.InitializeSphere(device);
 	m_BasicModel2.InitializeModel(device,"drone.obj");

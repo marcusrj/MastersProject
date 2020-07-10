@@ -18,10 +18,7 @@ private:
 		float u, v;
 	};
 
-	struct TreeType
-	{
-		float x, y, z;
-	};
+	
 public:
 	Terrain();
 	~Terrain();
@@ -33,7 +30,9 @@ public:
 	float* GetWavelength();
 	void TreePlacement(int spacing, int forestX, int forestY);
 	float* GetAmplitude();
+
 	DirectX::SimpleMath::Vector3* getTrees();
+	int getNumberTrees();
 
 private:
 	bool CalculateNormals();
@@ -63,6 +62,8 @@ private:
 	int m_vertexCount, m_indexCount;
 	float m_frequency, m_amplitude, m_wavelength;
 	HeightMapType* m_heightMap;
+
+
 	DirectX::SimpleMath::Vector3* m_trees;
 
 	//TreeType* m_trees;

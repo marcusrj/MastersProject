@@ -35,6 +35,7 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 	m_heightMap = new HeightMapType[m_terrainWidth * m_terrainHeight];
 	//m_trees = new TreeType[m_numberTrees];
 	m_trees = new DirectX::SimpleMath::Vector3[m_numberTrees];
+	
 	if (!m_heightMap)
 	{
 		return false;
@@ -59,6 +60,8 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 
 		}
 	}
+
+	TreePlacement(5,500,500);
 
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.
@@ -500,7 +503,7 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 	Islandify();
 	//Smooth();
 
-
+	TreePlacement(7,500,500);
 	result = CalculateNormals();
 	if (!result)
 	{
@@ -723,10 +726,20 @@ void Terrain::TreePlacement(int spacing, int forestX, int forestY)
 	int treeIndex = 0;
 
 	int heightmapIndex = 0;
-	int startX = forestX - m_forestWidth / 2;
-	int startY = forestY - m_forestHeight / 2;
-	int endX = m_forestWidth * spacing;
-	int endY = m_forestHeight * spacing;
+	int startX = forestX - (m_forestWidth * spacing) / 2;
+	int startY = forestY - (m_forestHeight * spacing) / 2;
+
+	int endX = startX + (m_forestWidth * spacing);
+	if (endX > m_terrainWidth)
+	{
+		endX = m_terrainWidth;
+	}
+
+	int endY = startY + (m_forestHeight * spacing);
+	if (endY > m_terrainHeight)
+	{
+		endY = m_terrainHeight;
+	}
 
 	for (int i = startX; i < endX; i+=spacing)
 	{
@@ -749,6 +762,11 @@ void Terrain::TreePlacement(int spacing, int forestX, int forestY)
 DirectX::SimpleMath::Vector3* Terrain::getTrees()
 {
 	return m_trees;
+}
+
+int Terrain::getNumberTrees()
+{
+	return m_numberTrees;
 }
 
 

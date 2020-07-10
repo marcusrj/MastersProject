@@ -104,11 +104,15 @@ private:
 	ModelClass																m_BasicModel2;
 	ModelClass																m_BasicModel3;
 
+	ModelClass*																m_treeModels;
+
 	//RenderTextures
 	RenderTexture*															m_FirstRenderPass;
 	RECT																	m_fullscreenRect;
 	RECT																	m_CameraViewRect;
 	
+	//Trees 
+	DirectX::SimpleMath::Vector3*											m_trees;
 
 
 #ifdef DXTK_AUDIO
