@@ -33,7 +33,8 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 
 	// Create the structure to hold the terrain data.
 	m_heightMap = new HeightMapType[m_terrainWidth * m_terrainHeight];
-	m_trees = new TreeType[m_numberTrees];
+	//m_trees = new TreeType[m_numberTrees];
+	m_trees = new DirectX::SimpleMath::Vector3[m_numberTrees];
 	if (!m_heightMap)
 	{
 		return false;
@@ -743,6 +744,11 @@ void Terrain::TreePlacement(int spacing, int forestX, int forestY)
 
 		}
 	}
+}
+
+DirectX::SimpleMath::Vector3* Terrain::getTrees()
+{
+	return m_trees;
 }
 
 

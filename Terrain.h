@@ -33,6 +33,7 @@ public:
 	float* GetWavelength();
 	void TreePlacement(int spacing, int forestX, int forestY);
 	float* GetAmplitude();
+	DirectX::SimpleMath::Vector3* getTrees();
 
 private:
 	bool CalculateNormals();
@@ -53,8 +54,7 @@ private:
 
 	int fastfloor(double x);
 	double dot(int g[], double x, double y);
-
-
+	
 private:
 	bool m_terrainGeneratedToggle;
 	int m_terrainWidth, m_terrainHeight;
@@ -63,7 +63,9 @@ private:
 	int m_vertexCount, m_indexCount;
 	float m_frequency, m_amplitude, m_wavelength;
 	HeightMapType* m_heightMap;
-	TreeType* m_trees;
+	DirectX::SimpleMath::Vector3* m_trees;
+
+	//TreeType* m_trees;
 	//arrays for our generated objects Made by directX
 	std::vector<VertexPositionNormalTexture> preFabVertices;
 	std::vector<uint16_t> preFabIndices;
