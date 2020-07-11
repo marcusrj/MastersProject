@@ -259,7 +259,7 @@ void Game::Render()
 	
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
-	//m_Terrain.Render(context);
+	m_Terrain.Render(context);
 	
 
 	//Sea
@@ -279,15 +279,16 @@ void Game::Render()
 
 		int treeCount = m_Terrain.getNumberTrees();
 
-		for (int i = 0; i < treeCount-1; i++)
+		for (int i = 0; i < treeCount; i++)
 		{
-			int tempX = m_trees[i].x;
-			int tempY = m_trees[i].y;
-			int tempZ = m_trees[i].z;
+			m_world = SimpleMath::Matrix::Identity;
+			int tempX = m_trees[i].x/10;
+			int tempY = m_trees[i].y/10;
+			int tempZ = m_trees[i].z/10;
 
 
-			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX/100, tempY-5.f, tempZ/100);
-			newScale = SimpleMath::Matrix::CreateScale(1);
+			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
+			newScale = SimpleMath::Matrix::CreateScale(0.1);
 			m_world = m_world * newScale *newPosition3;
 
 			m_BasicShaderPair.EnableShader(context);
@@ -409,7 +410,7 @@ void Game::CreateDeviceDependentResources()
 	
 	int treecount = m_Terrain.getNumberTrees();
 	m_treeModels = new ModelClass[treecount];
-	m_Terrain.TreePlacement(1,500,500);
+	m_Terrain.TreePlacement(15,500,500);
 	m_trees = m_Terrain.getTrees();
 	for (size_t i = 0; i < treecount; i++)
 	{
