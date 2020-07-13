@@ -146,5 +146,11 @@
     <FxCompile Include="light_vs.hlsl">
       <Filter>Assets</Filter>
     </FxCompile>
+    <FxCompile Include="horizontalblur_vs.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="horizontalblur_ps.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
