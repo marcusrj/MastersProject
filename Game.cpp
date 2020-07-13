@@ -252,8 +252,8 @@ void Game::Render()
 
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -15.6f, 0.0f);
-	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1);		//scale the terrain down a little. 
+	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
+	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1,0.1,0.1);		//scale the terrain down a little. 
 	m_world = m_world * newScale *newPosition3;
 
 	
@@ -264,7 +264,7 @@ void Game::Render()
 
 	//Sea
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -15.0f, 10.0f);
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.0f, 10.0f);
 	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
 	m_world = m_world * newScale *newPosition3;
 
@@ -282,19 +282,21 @@ void Game::Render()
 		for (int i = 0; i < treeCount; i++)
 		{
 			m_world = SimpleMath::Matrix::Identity;
-			int tempX = m_trees[i].x/10;
-			int tempY = m_trees[i].y/10;
-			int tempZ = m_trees[i].z/10;
+			float tempX = m_trees[i].x/10;
+			float tempY = m_trees[i].y/10 -4.7f ;
+			float tempZ = m_trees[i].z/10;
 
 
 			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
-			newScale = SimpleMath::Matrix::CreateScale(0.1);
+			newScale = SimpleMath::Matrix::CreateScale(0.1f,1.0f,0.1f);
 			m_world = m_world * newScale *newPosition3;
 
 			m_BasicShaderPair.EnableShader(context);
 			m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-
-			m_treeModels[i].Render(context);
+			//if (tempY > -16)
+			//{
+				m_treeModels[i].Render(context);
+			//}
 		}
 
 
@@ -404,13 +406,14 @@ void Game::CreateDeviceDependentResources()
     m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
 
-	//setup our terrain (width, height, forest Width, forest Height);
-	m_Terrain.Initialize(device, 1000, 1000,5,5);
+	//setup our terrain (devicee, width, height, forest Width, forest Height) width and height are in number of trees
+	m_Terrain.Initialize(device, 1000, 1000,25,23);
+	//m_Terrain.Initialize(device, 1000, 1000,25,25);
 
 	
 	int treecount = m_Terrain.getNumberTrees();
 	m_treeModels = new ModelClass[treecount];
-	m_Terrain.TreePlacement(15,500,500);
+	m_Terrain.TreePlacement(5,5,5);
 	m_trees = m_Terrain.getTrees();
 	for (size_t i = 0; i < treecount; i++)
 	{

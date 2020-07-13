@@ -24,7 +24,7 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 	// Save the dimensions of the terrain.
 	m_terrainWidth = terrainWidth;
 	m_terrainHeight = terrainHeight;
-	m_numberTrees = forestHeight*forestHeight;
+	m_numberTrees = forestWidth*forestHeight;
 	m_forestWidth = forestWidth;
 	m_forestHeight = forestHeight;
 	m_frequency = m_terrainWidth / 20;
@@ -61,7 +61,7 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 		}
 	}
 
-	TreePlacement(5,500,500);
+	TreePlacement(5,5,5);
 
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.
@@ -356,7 +356,7 @@ bool Terrain::InitializeBuffers(ID3D11Device * device )
 			index3 = (m_terrainHeight * (j + 1)) + i;      // Upper left.
 			index4 = (m_terrainHeight * (j + 1)) + (i + 1);  // Upper right.
 
-															 // Upper left.
+															 
 			vertices[index].position = DirectX::SimpleMath::Vector3(m_heightMap[index3].x, m_heightMap[index3].y, m_heightMap[index3].z);
 			vertices[index].normal = DirectX::SimpleMath::Vector3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
 			vertices[index].texture = DirectX::SimpleMath::Vector2(m_heightMap[index3].u, m_heightMap[index3].v);
@@ -478,7 +478,7 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 	int index;
 	float height = 0.0;
 
-	m_frequency = (6.283/m_terrainHeight) / 7 ; //we want a wavelength of 1 to be a single wave over the whole terrain.  A single wave is 2 pi which is about 6.283
+	m_frequency = (6.283/m_terrainHeight) ; //we want a wavelength of 1 to be a single wave over the whole terrain.  A single wave is 2 pi which is about 6.283
 
 	//loop through the terrain and set the hieghts how we want. This is where we generate the terrain
 	//in this case I will run a sin-wave through the terrain in one axis.
@@ -490,20 +490,23 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			//m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
-			m_heightMap[index].y = 1;
+			m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
+			//m_heightMap[index].y = 1;
 			m_heightMap[index].z = (float)j;
 		}
 	}
 
 
 	
-	MakeSomeNoise();
-    Faulting();
-	Islandify();
+	//MakeSomeNoise();
+	//Islandify();
+	//Islandify();
+    //Faulting();
+	
 	//Smooth();
+	
+	TreePlacement(5,3,3);
 
-	TreePlacement(7,500,500);
 	result = CalculateNormals();
 	if (!result)
 	{
@@ -726,37 +729,64 @@ void Terrain::TreePlacement(int spacing, int forestX, int forestY)
 	int treeIndex = 0;
 
 	int heightmapIndex = 0;
-	int startX = forestX - (m_forestWidth * spacing) / 2;
-	int startY = forestY - (m_forestHeight * spacing) / 2;
+	int startX = forestX; //- (m_forestWidth * spacing) / 2;
+	int startY = forestY; //- (m_forestHeight * spacing) / 2;
 
-	int endX = startX + (m_forestWidth * spacing);
+	int endX = startX + (m_forestHeight * spacing);
 	if (endX > m_terrainWidth)
 	{
 		endX = m_terrainWidth;
 	}
 
-	int endY = startY + (m_forestHeight * spacing);
+	int endY = startY + (m_forestWidth * spacing);
 	if (endY > m_terrainHeight)
 	{
 		endY = m_terrainHeight;
 	}
 
-	for (int i = startX; i < endX; i+=spacing)
+	srand((unsigned)time(0));
+
+
+	for (int j = startY; j < endY; j += spacing)
 	{
-		for (int j = startY; j < endY; j+=spacing)
+		
+		for (int i = startX; i < endX; i += spacing)
 		{
 
-			heightmapIndex = i * m_terrainWidth + j;
+			int jitterX = j + (rand() % (spacing + 1) - (spacing-2) / 2);
+			int jitterY = i + (rand() % (spacing + 1) - (spacing-2) / 2);
 
-			m_trees[treeIndex].x = i;
+			heightmapIndex = (jitterX * m_terrainHeight) + jitterY;
+
+			m_trees[treeIndex].x = m_heightMap[heightmapIndex].x;
 			m_trees[treeIndex].y = m_heightMap[heightmapIndex].y;
-			m_trees[treeIndex].z = j;
+			m_trees[treeIndex].z = m_heightMap[heightmapIndex].z;
 
 
 			treeIndex++;
 
 		}
 	}
+
+	//treeIndex = 0;
+	//heightmapIndex = 0;
+
+	
+	//for (int i = 0; i < m_numberTrees; i++)
+	//{
+	//	//heightmapIndex = (j * m_terrainHeight) + i;
+//
+	//	int jitterX = (rand() % (spacing + 1) - spacing / 2);
+	//	int jitterY = (rand() % (spacing + 1) - spacing / 2);
+
+	//	m_trees[treeIndex].x += jitterX;
+	//	m_trees[treeIndex].z += jitterY;
+
+		//m_trees[treeIndex].z = m_heightMap[heightmapIndex]
+	//	treeIndex++;
+	//}
+
+
 }
 
 DirectX::SimpleMath::Vector3* Terrain::getTrees()
@@ -814,7 +844,7 @@ void Terrain::Islandify()
 
 		for (int y = 0; y <m_terrainHeight ; y++)
 		{
-			m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t1));
+			m_heightMap[index].y = m_heightMap[index].y += Lerp(0, 5, Spike(t1));
 			
 			t1 += inc1;
 			index++;
