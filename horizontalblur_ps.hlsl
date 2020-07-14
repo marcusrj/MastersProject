@@ -1,4 +1,24 @@
-float4 HorizontalBlurPixelShader(PixelInputType input) : SV_TARGET
+
+
+Texture2D shaderTexture;
+SamplerState SampleType;
+
+struct PixelInputType
+{
+	float4 position : SV_POSITION;
+	float2 tex : TEXCOORD0;
+	float2 texCoord1 : TEXCOORD1;
+	float2 texCoord2 : TEXCOORD2;
+	float2 texCoord3 : TEXCOORD3;
+	float2 texCoord4 : TEXCOORD4;
+	float2 texCoord5 : TEXCOORD5;
+	float2 texCoord6 : TEXCOORD6;
+	float2 texCoord7 : TEXCOORD7;
+	float2 texCoord8 : TEXCOORD8;
+	float2 texCoord9 : TEXCOORD9;
+};
+
+float4 main(PixelInputType input) : SV_TARGET
 {
 	float weight0, weight1, weight2, weight3, weight4;
 	float normalization;

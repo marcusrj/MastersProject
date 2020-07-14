@@ -33,7 +33,7 @@ struct PixelInputType
 	float2 texCoord9 : TEXCOORD9;
 };
 
-PixelInputType HorizontalBlurVertexShader(VertexInputType input)
+PixelInputType main(VertexInputType input)
 {
 	PixelInputType output;
 	float texelSize;

@@ -13,6 +13,7 @@
 #include "RenderTexture.h"
 #include "Terrain.h"
 
+#include "HorizontalBlurShader.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -62,6 +63,7 @@ private:
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 	void SetupGUI();
+	void BlurRender();
 
     // Device resources.
     std::unique_ptr<DX::DeviceResources>    m_deviceResources;
@@ -97,6 +99,7 @@ private:
 
 	//Shaders
 	Shader																	m_BasicShaderPair;
+	HorizontalBlurShader													m_HorizontalBlurShaderPair;
 
 	//Scene. 
 	Terrain																	m_Terrain;

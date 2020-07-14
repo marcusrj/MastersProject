@@ -249,7 +249,7 @@ void Game::Render()
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 	context->RSSetState(m_states->CullClockwise());
 //	context->RSSetState(m_states->Wireframe());
-
+	BlurRender();
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
@@ -264,14 +264,14 @@ void Game::Render()
 
 	//Sea
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.0f, 10.0f);
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -10.0f, 10.0f);
 	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
 	m_world = m_world * newScale *newPosition3;
 
 	m_BasicShaderPair.EnableShader(context);
-	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView());
 
-	//m_BasicModel3.Render(context);
+	m_BasicModel3.Render(context);
 
 	//trees
 	
@@ -299,16 +299,83 @@ void Game::Render()
 			//}
 		}
 
+		
+
+		m_sprites->Begin();
+		m_sprites->Draw(m_FirstRenderPass->getShaderResourceView(), m_CameraViewRect);
+		m_sprites->End();
 
 	//render our GUI
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	
-
     // Show the new frame.
     m_deviceResources->Present();
 }
 
+void Game::BlurRender()
+{
+
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto renderTargetView = m_deviceResources->GetRenderTargetView();
+	auto depthTargetView = m_deviceResources->GetDepthStencilView();
+
+	m_FirstRenderPass->setRenderTarget(context);
+	m_FirstRenderPass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
+
+	//prepare transform for terrain object. 
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
+	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
+	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1, 0.1, 0.1);		//scale the terrain down a little. 
+	m_world = m_world * newScale *newPosition3;
+
+
+	m_BasicShaderPair.EnableShader(context);
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
+	m_Terrain.Render(context);
+
+
+	//Sea
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.0f, 10.0f);
+	newScale = SimpleMath::Matrix::CreateScale(30, 1, 30);
+	m_world = m_world * newScale *newPosition3;
+
+	m_BasicShaderPair.EnableShader(context);
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+
+	//m_BasicModel3.Render(context);
+
+	//trees
+
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
+
+	int treeCount = m_Terrain.getNumberTrees();
+
+	for (int i = 0; i < treeCount; i++)
+	{
+		m_world = SimpleMath::Matrix::Identity;
+		float tempX = m_trees[i].x / 10;
+		float tempY = m_trees[i].y / 10 - 4.7f;
+		float tempZ = m_trees[i].z / 10;
+
+
+		newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
+		newScale = SimpleMath::Matrix::CreateScale(0.1f, 1.0f, 0.1f);
+		m_world = m_world * newScale *newPosition3;
+
+		m_BasicShaderPair.EnableShader(context);
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+		//if (tempY > -16)
+		//{
+		m_treeModels[i].Render(context);
+		//}
+	}
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.	
+	context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
+
+}
 
 // Helper method to clear the back buffers.
 void Game::Clear()
@@ -428,6 +495,8 @@ void Game::CreateDeviceDependentResources()
 	//load and set up our Vertex and Pixel Shaders
 	m_BasicShaderPair.InitStandard(device, L"light_vs.cso", L"light_ps.cso");
 
+	m_HorizontalBlurShaderPair.InitStandard(device, L"horizontalblur_vs.cso", L"horizontalblur_ps.cso");
+
 	//load Textures
 	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"water.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
@@ -459,6 +528,8 @@ void Game::CreateWindowSizeDependentResources()
         100.0f
     );
 }
+
+
 
 void Game::SetupGUI()
 {
