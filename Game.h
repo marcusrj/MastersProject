@@ -63,7 +63,9 @@ private:
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 	void SetupGUI();
-	void BlurRender();
+	void RenderToTexturePass();
+	void RenderToTextureHorizontalBlur();
+	void RenderToTextureVerticalBlur();
 
     // Device resources.
     std::unique_ptr<DX::DeviceResources>    m_deviceResources;
@@ -111,6 +113,9 @@ private:
 
 	//RenderTextures
 	RenderTexture*															m_FirstRenderPass;
+	RenderTexture*															m_HorizontalRenderPass;
+	RenderTexture*															m_VerticalRenderPass;
+
 	RECT																	m_fullscreenRect;
 	RECT																	m_CameraViewRect;
 	

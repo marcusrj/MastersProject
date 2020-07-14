@@ -238,7 +238,7 @@ void Game::Render()
     auto context = m_deviceResources->GetD3DDeviceContext();
 	auto renderTargetView = m_deviceResources->GetRenderTargetView();
 	auto depthTargetView = m_deviceResources->GetDepthStencilView();
-
+	
     // Draw Text to the screen
     m_sprites->Begin();
 		m_font->DrawString(m_sprites.get(), L"Procedural Methods", XMFLOAT2(10, 10), Colors::Yellow);
@@ -249,7 +249,13 @@ void Game::Render()
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 	context->RSSetState(m_states->CullClockwise());
 //	context->RSSetState(m_states->Wireframe());
-	BlurRender();
+
+
+	RenderToTexturePass();
+	
+	RenderToTextureHorizontalBlur();
+
+	
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
@@ -302,7 +308,7 @@ void Game::Render()
 		
 
 		m_sprites->Begin();
-		m_sprites->Draw(m_FirstRenderPass->getShaderResourceView(), m_CameraViewRect);
+		m_sprites->Draw(m_HorizontalRenderPass->getShaderResourceView(), m_CameraViewRect);
 		m_sprites->End();
 
 	//render our GUI
@@ -313,7 +319,7 @@ void Game::Render()
     m_deviceResources->Present();
 }
 
-void Game::BlurRender()
+void Game::RenderToTexturePass()
 {
 
 	auto context = m_deviceResources->GetD3DDeviceContext();
@@ -329,11 +335,9 @@ void Game::BlurRender()
 	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1, 0.1, 0.1);		//scale the terrain down a little. 
 	m_world = m_world * newScale *newPosition3;
 
-
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
 	m_Terrain.Render(context);
-
 
 	//Sea
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
@@ -366,16 +370,46 @@ void Game::BlurRender()
 
 		m_BasicShaderPair.EnableShader(context);
 		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-		//if (tempY > -16)
-		//{
+		
 		m_treeModels[i].Render(context);
-		//}
+
 	}
 
 	// Reset the render target back to the original back buffer and not the render to texture anymore.	
 	context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
 
 }
+
+void Game::RenderToTextureHorizontalBlur()
+{
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto renderTargetView = m_deviceResources->GetRenderTargetView();
+	auto depthTargetView = m_deviceResources->GetDepthStencilView();
+
+	m_HorizontalRenderPass->setRenderTarget(context);
+
+	m_HorizontalRenderPass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
+
+	m_HorizontalBlurShaderPair.EnableShader(context);
+	m_HorizontalBlurShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView(), 800);
+
+	m_sprites->Begin();
+	m_sprites->Draw(m_FirstRenderPass->getShaderResourceView(), m_CameraViewRect);
+	m_sprites->End();
+
+	context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
+}
+
+void Game::RenderToTextureVerticalBlur()
+{
+
+}
+
+
+
+
+
+
 
 // Helper method to clear the back buffers.
 void Game::Clear()
