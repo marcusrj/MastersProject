@@ -60,8 +60,8 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 
 		}
 	}
-
-	TreePlacement(5,5,5);
+	GenerateHeightMap(device);
+	//TreePlacement(10,370,370);
 
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.
@@ -78,7 +78,7 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 		return false;
 	}
 
-	GenerateHeightMap(device);
+	
 	
 	return true;
 }
@@ -228,11 +228,14 @@ bool Terrain::CalculateNormals()
 	return true;
 }
 
+
+/*
+	An attempt at a smoothing function that doesnt work. was made by trying to adapt the calcualte normals function
+*/
 void Terrain::Smooth()
 {
 	int i, j, index, count = 0;
 	
-	// Create a temporary array to hold the un-normalized normal vectors.
 
 	for (j = 0; j < m_terrainHeight; j++)
 	{
@@ -284,8 +287,6 @@ void Terrain::Smooth()
 
 			// Get an index to the vertex location in the height map array.
 			index = (j * m_terrainHeight) + i;
-
-			// Normalize the final shared normal for this vertex and store it in the height map array.
 
 			m_heightMap[index].y = val;
 				//(m_heightMap[index].y + val)/2;
@@ -481,8 +482,7 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 
 	m_frequency = (6.283/m_terrainHeight) ; //we want a wavelength of 1 to be a single wave over the whole terrain.  A single wave is 2 pi which is about 6.283
 
-	//loop through the terrain and set the hieghts how we want. This is where we generate the terrain
-	//in this case I will run a sin-wave through the terrain in one axis.
+	
 
 	for (int j = 0; j<m_terrainHeight; j++)
 	{
@@ -498,15 +498,15 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 	}
 
 
-	
-	//MakeSomeNoise();
 	Islandify();
+	MakeSomeNoise();
+	Faulting();
 	Islandify();
-    Faulting();
+   
 	
 	//Smooth();
 	
-	TreePlacement(5,3,3);
+	TreePlacement(5,370,370);
 
 	result = CalculateNormals();
 	if (!result)
@@ -536,6 +536,9 @@ float* Terrain::GetAmplitude()
 	return &m_amplitude;
 }
 
+/*
+	runs some simplex noise through the terrain
+*/
 void Terrain::MakeSomeNoise() 
 {
 	int index;
@@ -547,39 +550,50 @@ void Terrain::MakeSomeNoise()
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			m_heightMap[index].y = m_heightMap[index].y + (float)SimplexNoise((double)i * m_wavelength, (double)j *  m_wavelength) * m_amplitude;
+			//add some noise to the height
+			m_heightMap[index].y = m_heightMap[index].y + (float)SimplexNoise((double)i * 0.2f, (double)j *  0.2f) * 0.01f;
+		//	m_heightMap[index].y = m_heightMap[index].y + (float)SimplexNoise((double)i * m_wavelength, (double)j *  m_wavelength) * m_amplitude;
 			m_heightMap[index].z = (float)j;
 		}
 	}
 
 }
 
-
+/*
+	faulting function.
+	draws lines across the terrain and creates "faults" by lowering and raising either side of the line
+*/
 void Terrain::Faulting()
 {
 	int index = 0;
 	int iterations = 3000;
 	
-	float displacement = 0.1f;
+	float displacement = 0.2f;
+
+	//used to decrement displacement to gradually decrease fault size making less artifacts in the terrain
 	float displacementInc = 0.1f / iterations;
+
+	//random seed
 	srand(time(0));
 
 	//loop for number of faults we want
 	for (int faults = 0; faults < iterations; faults++)
 	{
-
+		
 		float X1, Y1, X2, Y2;
 		float m, c;
 
+		// create two random points on the grid
 		// 1+ so we dont go through the origin because thats bad
 		X1 = 1 + int(rand() % m_terrainWidth);
 		Y1 = 1 + int(rand() % m_terrainHeight);
 		X2 = 1 + int(rand() % m_terrainWidth);
 		Y2 = 1 + int(rand() % m_terrainHeight);
 
-		//Just in case 
+		//Just in case so we dont try to divide by zero
 		if (Y1 - Y2 != 0)
 		{
+			//find gradient of line
 			m = float(X1 - X2) / (Y1 - Y2);
 		}
 		else
@@ -587,7 +601,7 @@ void Terrain::Faulting()
 			m = 0;
 		}
 
-		//Y=MX+C WE dont have c yet
+		//Y=MX+C WE dont have c yet c is the y intercept
 		//C=Y-MX
 		c = Y1 - m * X1;
 
@@ -604,14 +618,18 @@ void Terrain::Faulting()
 				//val=MX-Y+C 
 				val = float((m * i) - j + c);  //if this equals zero point is on line
 				index = (m_terrainHeight * j) + i;
+
+				//alternate every other fault makes flatter terrains which is what we want
 				if (faults % 2 == 0)
 				{
 					if (val > 0) 
 					{
+						//raise on one side
 						m_heightMap[index].y += displacement;
 					}
 					if (val < 0)
 					{
+						//lower on the other
 						m_heightMap[index].y -= displacement;
 					}
 				}
@@ -619,20 +637,18 @@ void Terrain::Faulting()
 				{
 					if (val > 0)
 					{
+						//lower on one side
 						m_heightMap[index].y -= displacement;
 					}
 					if (val < 0)
 					{
+						//raise on the other
 						m_heightMap[index].y += displacement;
 					}
 				}
-				//m_heightMap[index].x = (float)i;
-				//m_heightMap[index].z = (float)j;
-				
 			}
-			
 		}
-		displacement -= displacementInc;
+		displacement -= displacementInc; //decrement fault size
 	}
 
 	
@@ -640,7 +656,9 @@ void Terrain::Faulting()
 }
 
 
-
+/*
+	Simplex noise function was taken from simplex noise demistified
+*/
 double Terrain::SimplexNoise(double xin, double yin)
 {
 	for (int i = 0; i < 512; i++) {
@@ -723,6 +741,11 @@ double Terrain::dot(int g[], double x, double y)
 }
 
 
+/*
+	Jittered grid tree placement
+
+	TODO *this should definitely be in its own class*
+*/
 void Terrain::TreePlacement(int spacing, int forestX, int forestY) 
 {
 	//int treeStartX, treeWidth, treeStartY, treeHeight;
@@ -734,60 +757,43 @@ void Terrain::TreePlacement(int spacing, int forestX, int forestY)
 	int startY = forestY; //- (m_forestHeight * spacing) / 2;
 
 	int endX = startX + (m_forestHeight * spacing);
+
+	//make sure we dont go off the edge of the terrain
 	if (endX > m_terrainWidth)
 	{
 		endX = m_terrainWidth;
 	}
 
 	int endY = startY + (m_forestWidth * spacing);
+	//make sure we dont go off the edge of the terrain
 	if (endY > m_terrainHeight)
 	{
 		endY = m_terrainHeight;
 	}
 
+	//random seed
 	srand((unsigned)time(0));
 
-
+	//loop from start of forest to end of forest incremented by initial tree spacing
 	for (int j = startY; j < endY; j += spacing)
 	{
-		
 		for (int i = startX; i < endX; i += spacing)
 		{
-
+			//calculate jitter
 			int jitterX = j + (rand() % (spacing + 1) - (spacing-2) / 2);
 			int jitterY = i + (rand() % (spacing + 1) - (spacing-2) / 2);
 
+			//find point on terrain relative to tree
 			heightmapIndex = (jitterX * m_terrainHeight) + jitterY;
 
+			//give tree the same coords as terrain vertex
 			m_trees[treeIndex].x = m_heightMap[heightmapIndex].x;
 			m_trees[treeIndex].y = m_heightMap[heightmapIndex].y;
 			m_trees[treeIndex].z = m_heightMap[heightmapIndex].z;
 
-
 			treeIndex++;
-
 		}
 	}
-
-	//treeIndex = 0;
-	//heightmapIndex = 0;
-
-	
-	//for (int i = 0; i < m_numberTrees; i++)
-	//{
-	//	//heightmapIndex = (j * m_terrainHeight) + i;
-//
-	//	int jitterX = (rand() % (spacing + 1) - spacing / 2);
-	//	int jitterY = (rand() % (spacing + 1) - spacing / 2);
-
-	//	m_trees[treeIndex].x += jitterX;
-	//	m_trees[treeIndex].z += jitterY;
-
-		//m_trees[treeIndex].z = m_heightMap[heightmapIndex]
-	//	treeIndex++;
-	//}
-
-
 }
 
 DirectX::SimpleMath::Vector3* Terrain::getTrees()
@@ -801,17 +807,29 @@ int Terrain::getNumberTrees()
 }
 
 
-// https://www.febucci.com/2018/08/easing-functions/
+/*
+	function is not mine and was taken from
+	https://www.febucci.com/2018/08/easing-functions/
+*/
 float Terrain::Flip(float x)
 {
 	return 1 - x;
 }
 
+/*
+	function is not mine and was taken from
+	https://www.febucci.com/2018/08/easing-functions/
+*/
 float Terrain::EaseIn(float t)
 {
 	return (t * t);
 }
 
+/*
+	function is not mine and was taken from
+	https://www.febucci.com/2018/08/easing-functions/
+	t will increase until it reaches halfway and then decrease again making a spike /\
+*/
 float Terrain::Spike(float t)
 {
 	if (t <= .5f)
@@ -820,25 +838,34 @@ float Terrain::Spike(float t)
 	return EaseIn(Flip(t) / .5f);
 }
 
+/*
+	function is not mine and was taken from
+	https://www.febucci.com/2018/08/easing-functions/
+	linear form zero to 1 /
+*/
 float Terrain::Lerp(float start_value, float end_value, float pct)
 {
 	return (start_value + (end_value - start_value) * pct);
 }
 
-
+/*
+	makes the terrain more island like. makes use of the febucci easing functions
+*/
 void Terrain::Islandify() 
 {
-
-
+	//values passed into easing function
 	float t1 = 0;
 	float t2 = 0;
+	
+	//values to increment t by each loop
 	float inc1 = 1 / float(m_terrainWidth);
 	float inc2 = 1 / float(m_terrainHeight);
+
 	int index = 0;
 
+	//first pass goes along the y axis
 	for (int x = 0; x < m_terrainWidth; x++)
 	{
-		//m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t2));
 
 		for (int y = 0; y <m_terrainHeight ; y++)
 		{
@@ -851,9 +878,10 @@ void Terrain::Islandify()
 		t1 = 0;
 	}
 	index = 0;
+
+	//second pass goes along the x axis
 	for (int y = 0; y < m_terrainHeight; y++)
 	{
-		//m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t2));
 
 		for (int x = 0; x < m_terrainWidth; x++)
 		{
@@ -869,6 +897,9 @@ void Terrain::Islandify()
 	}
 }
 
+/*
+	Used to get height of terrain at given coordinates
+*/
 float Terrain::getHeightAtPosition(int xin, int zin)
 {
 	int index = (m_terrainHeight * zin) + xin;

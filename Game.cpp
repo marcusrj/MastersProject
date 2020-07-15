@@ -51,12 +51,12 @@ void Game::Initialize(HWND window, int width, int height)
 	UFORotInc = 0.01f;
 
 	//Saucer Positioning
-	UFOX = 0;
-	UFOZ = 0;
+	UFOX = 150;
+	UFOZ = 150;
 	UFOInc = 1;
 
-	sphereX = 0;
-	sphereZ = 0;
+	sphereX = 250;
+	sphereZ = 250;
 
 	m_input.Initialise(window);
 
@@ -95,8 +95,8 @@ void Game::Initialize(HWND window, int width, int height)
 	m_Light.setDirection(-1.0f, -1.0f, 0.0f);
 
 	//setup camera
-	m_Camera01.setPosition(Vector3(0.0f, 0.0f, 4.0f));
-	m_Camera01.setRotation(Vector3(-90.0f, -180.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
+	m_Camera01.setPosition(Vector3(20.0f, 10.0f, 4.0f));
+	m_Camera01.setRotation(Vector3(-90.0f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
 
 
 	
@@ -165,24 +165,29 @@ void Game::Update(DX::StepTimer const& timer)
 	{
 		Vector3 rotation = m_Camera01.getRotation();
 		rotation.y = rotation.y += m_Camera01.getRotationSpeed();
+		
 		m_Camera01.setRotation(rotation);
 	}
 	if (m_gameInputCommands.right)
 	{
 		Vector3 rotation = m_Camera01.getRotation();
 		rotation.y = rotation.y -= m_Camera01.getRotationSpeed();
+		
 		m_Camera01.setRotation(rotation);
 	}
 	if (m_gameInputCommands.forward)
 	{
 		Vector3 position = m_Camera01.getPosition(); //get the position
 		position += (m_Camera01.getForward()*m_Camera01.getMoveSpeed()); //add the forward vector
+		//position.y = m_Terrain.getHeightAtPosition(position.x, position.z);
 		m_Camera01.setPosition(position);
+
 	}
 	if (m_gameInputCommands.back)
 	{
 		Vector3 position = m_Camera01.getPosition(); //get the position
 		position -= (m_Camera01.getForward()*m_Camera01.getMoveSpeed()); //add the forward vector
+		//position.z = m_Terrain.getHeightAtPosition(position.x, position.y);
 		m_Camera01.setPosition(position);
 	}
 
@@ -205,26 +210,26 @@ void Game::Update(DX::StepTimer const& timer)
 	//Saucer Movement
 	if (m_gameInputCommands.playerForward)
 	{
-		if (UFOZ > 0)
-		UFOZ -= UFOInc;
+		if (UFOZ < 999)
+			UFOZ += UFOInc;
 	}
 	if (m_gameInputCommands.playerBackward)
 	{
-		if (UFOZ < 999)
-		UFOZ += UFOInc;
+		if (UFOZ > 0)
+			UFOZ -= UFOInc;
 	}
 	if (m_gameInputCommands.playerLeft)
 	{ 
-		if (UFOX > 0)
-		UFOX -= UFOInc;
+		if (UFOX < 999)
+			UFOX += UFOInc;
 	}
 	if (m_gameInputCommands.playerRight)
 	{
-		if (UFOX < 999)
-		UFOX += UFOInc;
+		if (UFOX > 0)
+			UFOX -= UFOInc;
 	}
 
-	//checks if ufo and sphere have collided
+	//checks if ufo and sphere have collided (or close enough)
 	if (UFOX >= sphereX-10 && UFOX <= sphereX+10)
 	{
 		if (UFOZ >= sphereZ - 10 && UFOZ <= sphereZ + 10)
@@ -234,8 +239,8 @@ void Game::Update(DX::StepTimer const& timer)
 			int newX = 0;
 			int newZ = 0;
 
-			newX = (rand() % 1000);
-			newZ = (rand() % 1000);
+			newX = 250 + (rand() % 500);
+			newZ = 250 + (rand() % 500);
 
 			sphereX = newX;
 			sphereZ = newZ;
@@ -325,7 +330,6 @@ void Game::Render()
 	s2 = std::to_string(sphereZ);
 	s = s + "," + s2;
 
-
 	int n = s.length();
 	char* char_array = new char[n + 1];
 	strcpy(char_array, s.c_str());
@@ -351,7 +355,7 @@ void Game::Render()
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
-	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1,0.1,0.1);		//scale the terrain down a little. 
+	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1,0.07,0.1);		//scale the terrain down a little. 
 	m_world = m_world * newScale *newPosition3;
 
 	
@@ -362,7 +366,7 @@ void Game::Render()
 
 	//Sea
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -10.0f, 10.0f);
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.0f, 10.0f);
 	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
 	m_world = m_world * newScale *newPosition3;
 
@@ -381,7 +385,7 @@ void Game::Render()
 		{
 			m_world = SimpleMath::Matrix::Identity;
 			float tempX = m_trees[i].x/10;
-			float tempY = m_trees[i].y/10 -4.7f ;
+			float tempY = m_trees[i].y/14.2 -4.7f ;
 			float tempZ = m_trees[i].z/10;
 
 
@@ -412,7 +416,7 @@ void Game::Render()
 		newPosition = SimpleMath::Matrix::CreateScale(0.3f, 0.3f, 0.3f); //model too big so we need to scale it down
 		m_world = m_world * newPosition;
 
-		newPosition = SimpleMath::Matrix::CreateTranslation(UFOX/10, ufoHeight/10, UFOZ/10);
+		newPosition = SimpleMath::Matrix::CreateTranslation(UFOX/10, ufoHeight/14.2, UFOZ/10);
 		m_world = m_world * newPosition;
 
 		UFORotY = UFORotY + UFORotInc; // increment rotation
@@ -678,7 +682,7 @@ void Game::CreateDeviceDependentResources()
 	
 	int treecount = m_Terrain.getNumberTrees();
 	m_treeModels = new ModelClass[treecount];
-	m_Terrain.TreePlacement(5,5,5);
+	//m_Terrain.TreePlacement(5,370,370);
 	m_trees = m_Terrain.getTrees();
 	for (size_t i = 0; i < treecount; i++)
 	{
