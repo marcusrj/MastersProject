@@ -17,6 +17,15 @@ using namespace ImGui;
 
 using Microsoft::WRL::ComPtr;
 
+
+
+// rotations in radians
+float UFORotY, UFORotInc;
+
+float UFOX, UFOZ, UFOInc;
+float sphereX, sphereZ;
+int score = 0;
+
 Game::Game() noexcept(false)
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
@@ -36,6 +45,18 @@ Game::~Game()
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
+
+	//Radians
+	UFORotY = 1.5f;
+	UFORotInc = 0.01f;
+
+	//Saucer Positioning
+	UFOX = 0;
+	UFOZ = 0;
+	UFOInc = 1;
+
+	sphereX = 0;
+	sphereZ = 0;
 
 	m_input.Initialise(window);
 
@@ -116,7 +137,7 @@ void Game::Tick()
     {
         Update(m_timer);
     });
-
+	Sleep(10);
 	//Render all game content. 
     Render();
 
@@ -179,6 +200,51 @@ void Game::Update(DX::StepTimer const& timer)
 		//}
 	}
 
+
+
+	//Saucer Movement
+	if (m_gameInputCommands.playerForward)
+	{
+		if (UFOZ > 0)
+		UFOZ -= UFOInc;
+	}
+	if (m_gameInputCommands.playerBackward)
+	{
+		if (UFOZ < 999)
+		UFOZ += UFOInc;
+	}
+	if (m_gameInputCommands.playerLeft)
+	{ 
+		if (UFOX > 0)
+		UFOX -= UFOInc;
+	}
+	if (m_gameInputCommands.playerRight)
+	{
+		if (UFOX < 999)
+		UFOX += UFOInc;
+	}
+
+	//checks if ufo and sphere have collided
+	if (UFOX >= sphereX-10 && UFOX <= sphereX+10)
+	{
+		if (UFOZ >= sphereZ - 10 && UFOZ <= sphereZ + 10)
+		{
+			srand((unsigned)time(0));
+
+			int newX = 0;
+			int newZ = 0;
+
+			newX = (rand() % 1000);
+			newZ = (rand() % 1000);
+
+			sphereX = newX;
+			sphereZ = newZ;
+			score++;
+		}
+	}
+
+
+
 	m_Camera01.Update();	//camera update.
 	m_Terrain.Update();		//terrain update.  doesnt do anything at the moment. 
 	
@@ -240,20 +306,46 @@ void Game::Render()
 	auto depthTargetView = m_deviceResources->GetDepthStencilView();
 	
     // Draw Text to the screen
+
+	//std::string scoreString = "Score: " + score;
+
+	
+	//jumping through hoops to concatenate strings and then convert to char array 
+	std::string s2 = std::to_string(score);
+	std::string s = "Score: " + s2;
+	s2 = std::to_string(UFOX);
+	s = s + " Saucer: ";
+	s = s + s2;
+	s2 = std::to_string(UFOZ);
+	s = s + "," + s2;
+
+	s = s + " Objective: ";
+	s2 = std::to_string(sphereX);
+	s = s + s2;
+	s2 = std::to_string(sphereZ);
+	s = s + "," + s2;
+
+
+	int n = s.length();
+	char* char_array = new char[n + 1];
+	strcpy(char_array, s.c_str());
+
+	
     m_sprites->Begin();
-		m_font->DrawString(m_sprites.get(), L"Procedural Methods", XMFLOAT2(10, 10), Colors::Yellow);
+		m_font->DrawString(m_sprites.get(),char_array , XMFLOAT2(10, 10), Colors::Yellow);
     m_sprites->End();
 
 	//Set Rendering states. 
 	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 	context->RSSetState(m_states->CullClockwise());
-//	context->RSSetState(m_states->Wireframe());
 
+	if (m_gameInputCommands.wireframe)
+	{
+		context->RSSetState(m_states->Wireframe());
+	}
 
-
-	RenderToTexturePass();
-
+	//RenderToTexturePass();
 	//RenderToTextureHorizontalBlur();
 	
 	//prepare transform for terrain object. 
@@ -304,6 +396,59 @@ void Game::Render()
 				m_treeModels[i].Render(context);
 			//}
 		}
+
+
+
+		//UFO Transformations
+
+		m_world = SimpleMath::Matrix::Identity; //set world back to identity
+		SimpleMath::Matrix newPosition = SimpleMath::Matrix::Identity;
+
+		newPosition = SimpleMath::Matrix::CreateRotationY(UFORotY); // rotation
+		m_world = m_world * newPosition;
+	
+		float ufoHeight = -4.7f + m_Terrain.getHeightAtPosition(UFOX, UFOZ);
+
+		newPosition = SimpleMath::Matrix::CreateScale(0.3f, 0.3f, 0.3f); //model too big so we need to scale it down
+		m_world = m_world * newPosition;
+
+		newPosition = SimpleMath::Matrix::CreateTranslation(UFOX/10, ufoHeight/10, UFOZ/10);
+		m_world = m_world * newPosition;
+
+		UFORotY = UFORotY + UFORotInc; // increment rotation
+
+		m_BasicShaderPair.EnableShader(context);
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture3.Get());
+
+
+		//m_world = m_world * newPosition;
+		m_UFO.Render(context);
+
+		//Sphere Transformations
+
+		m_world = SimpleMath::Matrix::Identity; //set world back to identity
+		newPosition = SimpleMath::Matrix::Identity;
+
+		newPosition = SimpleMath::Matrix::CreateRotationY(UFORotY); // rotation
+		m_world = m_world * newPosition;
+
+		float sphereHeight = -4.7f + m_Terrain.getHeightAtPosition(sphereX, sphereZ);
+
+		newPosition = SimpleMath::Matrix::CreateScale(0.5f, 0.5f, 0.5f); //model too big so we need to scale it down
+		m_world = m_world * newPosition;
+
+		newPosition = SimpleMath::Matrix::CreateTranslation(sphereX / 10, sphereHeight / 10, sphereZ / 10);
+		m_world = m_world * newPosition;
+
+		//UFORotY = UFORotY + UFORotInc; // increment rotation
+
+		m_BasicShaderPair.EnableShader(context);
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture3.Get());
+
+		m_Sphere.Render(context);
+
+		//newPosition = SimpleMath::Matrix::CreateTranslation(UFOX, -0.6f, UFOZ);
+
 
 		//m_HorizontalBlurShaderPair.EnableShader(context);
 		//m_HorizontalBlurShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView(), 800);
@@ -392,7 +537,7 @@ void Game::RenderToTextureDownSample()
 
 	m_DownSamplePass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
 
-	m_deviceResources->
+	//m_deviceResources->
 
 }
 
@@ -550,12 +695,19 @@ void Game::CreateDeviceDependentResources()
 
 	m_HorizontalBlurShaderPair.InitStandard(device, L"horizontalblur_vs.cso", L"horizontalblur_ps.cso");
 
+	//our player controlled ufo
+	m_UFO.InitializeModel(device, "Ufo.obj");
+	//sphere for the player to collect
+	m_Sphere.InitializeSphere(device);
 
+	
 	m_Window.Initialize(device, 400, 300);
 
 	//load Textures
 	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"water.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"UfoTexture.dds", nullptr, m_texture3.ReleaseAndGetAddressOf());
+
 
 	//Initialise Render to texture
 	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 

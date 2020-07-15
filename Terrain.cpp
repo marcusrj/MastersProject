@@ -78,6 +78,7 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 		return false;
 	}
 
+	GenerateHeightMap(device);
 	
 	return true;
 }
@@ -490,8 +491,8 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 			index = (m_terrainHeight * j) + i;
 
 			m_heightMap[index].x = (float)i;
-			m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
-			//m_heightMap[index].y = 1;
+			//m_heightMap[index].y = (float)(sin((float)i*(m_frequency))*m_amplitude); 
+			m_heightMap[index].y = 1;
 			m_heightMap[index].z = (float)j;
 		}
 	}
@@ -499,9 +500,9 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 
 	
 	//MakeSomeNoise();
-	//Islandify();
-	//Islandify();
-    //Faulting();
+	Islandify();
+	Islandify();
+    Faulting();
 	
 	//Smooth();
 	
@@ -825,9 +826,6 @@ float Terrain::Lerp(float start_value, float end_value, float pct)
 }
 
 
-/*
-
-*/
 void Terrain::Islandify() 
 {
 
@@ -871,6 +869,13 @@ void Terrain::Islandify()
 	}
 }
 
+float Terrain::getHeightAtPosition(int xin, int zin)
+{
+	int index = (m_terrainHeight * zin) + xin;
+
+	return m_heightMap[index].y;
+
+}
 
 
 

@@ -13,6 +13,14 @@ struct InputCommands
 	bool rotRight;
 	bool rotLeft;
 	bool generate;
+
+	//added extra controls
+	bool playerForward;
+	bool playerBackward;
+	bool playerLeft;
+	bool playerRight;
+
+	bool wireframe;
 };
 
 

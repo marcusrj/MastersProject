@@ -56,6 +56,25 @@ void Input::Update()
 	//space
 	if (kb.Space) m_GameInput.generate = true;
 	else		m_GameInput.generate = false;
+
+	//Up arrow
+	if (kb.Up)		m_GameInput.playerForward = true;
+	else			m_GameInput.playerForward = false;
+
+	//Down arrow
+	if (kb.Down)	m_GameInput.playerBackward = true;
+	else			m_GameInput.playerBackward = false;
+
+	//Left arrow
+	if (kb.Left)	m_GameInput.playerLeft = true;
+	else			m_GameInput.playerLeft = false;
+
+	//Right arrow
+	if (kb.Right)	m_GameInput.playerRight = true;
+	else			m_GameInput.playerRight = false;
+
+	if (kb.Y)	m_GameInput.wireframe = true;
+	else		m_GameInput.wireframe = false;
 }
 
 bool Input::Quit()

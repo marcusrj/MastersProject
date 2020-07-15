@@ -34,6 +34,8 @@ public:
 	DirectX::SimpleMath::Vector3* getTrees();
 	int getNumberTrees();
 
+	float getHeightAtPosition(int xin, int zin);
+
 private:
 	bool CalculateNormals();
 	void Shutdown();

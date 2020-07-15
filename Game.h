@@ -12,7 +12,9 @@
 #include "Camera.h"
 #include "RenderTexture.h"
 #include "Terrain.h"
-
+#include <string.h>
+#include <sstream>
+#include <ctime>
 #include "HorizontalBlurShader.h"
 #include "OrthoWindowClass.h"
 
@@ -103,7 +105,7 @@ private:
 	//textures 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture1;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture2;
-
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture3;
 	//Shaders
 	Shader																	m_BasicShaderPair;
 	HorizontalBlurShader													m_HorizontalBlurShaderPair;
@@ -115,6 +117,8 @@ private:
 	ModelClass																m_BasicModel3;
 
 	ModelClass*																m_treeModels;
+	ModelClass																m_UFO;
+	ModelClass																m_Sphere;
 
 	//RenderTextures
 	RenderTexture*															m_FirstRenderPass;
