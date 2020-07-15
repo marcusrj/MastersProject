@@ -14,6 +14,7 @@
 #include "Terrain.h"
 
 #include "HorizontalBlurShader.h"
+#include "OrthoWindowClass.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -63,9 +64,13 @@ private:
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 	void SetupGUI();
+
+
 	void RenderToTexturePass();
 	void RenderToTextureHorizontalBlur();
 	void RenderToTextureVerticalBlur();
+	void RenderToTextureDownSample();
+	void RenderToTextureUpSample();
 
     // Device resources.
     std::unique_ptr<DX::DeviceResources>    m_deviceResources;
@@ -113,7 +118,9 @@ private:
 
 	//RenderTextures
 	RenderTexture*															m_FirstRenderPass;
+	RenderTexture*															m_DownSamplePass;
 	RenderTexture*															m_HorizontalRenderPass;
+	RenderTexture*															m_UpSamplePass;
 	RenderTexture*															m_VerticalRenderPass;
 
 	RECT																	m_fullscreenRect;
@@ -121,6 +128,9 @@ private:
 	
 	//Trees 
 	DirectX::SimpleMath::Vector3*											m_trees;
+
+	OrthoWindowClass	m_Window;
+
 
 
 #ifdef DXTK_AUDIO

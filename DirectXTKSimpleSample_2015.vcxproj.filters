@@ -71,6 +71,9 @@
     <ClInclude Include="HorizontalBlurShader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="OrthoWindowClass.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -117,6 +120,9 @@
       <Filter>Imgui</Filter>
     </ClCompile>
     <ClCompile Include="HorizontalBlurShader.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="OrthoWindowClass.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>

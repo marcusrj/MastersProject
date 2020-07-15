@@ -216,6 +216,7 @@ void DeviceResources::CreateDeviceResources()
     }
 }
 
+
 // These resources need to be recreated every time the window size is changed.
 void DeviceResources::CreateWindowSizeDependentResources() 
 {

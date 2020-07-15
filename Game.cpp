@@ -251,10 +251,10 @@ void Game::Render()
 //	context->RSSetState(m_states->Wireframe());
 
 
-	RenderToTexturePass();
-	
-	RenderToTextureHorizontalBlur();
 
+	RenderToTexturePass();
+
+	//RenderToTextureHorizontalBlur();
 	
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
@@ -275,7 +275,7 @@ void Game::Render()
 	m_world = m_world * newScale *newPosition3;
 
 	m_BasicShaderPair.EnableShader(context);
-	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView());
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
 
 	m_BasicModel3.Render(context);
 
@@ -305,11 +305,13 @@ void Game::Render()
 			//}
 		}
 
-		
+		//m_HorizontalBlurShaderPair.EnableShader(context);
+		//m_HorizontalBlurShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView(), 800);
+		//m_Window.Render(context);
 
-		m_sprites->Begin();
-		m_sprites->Draw(m_HorizontalRenderPass->getShaderResourceView(), m_CameraViewRect);
-		m_sprites->End();
+		//m_sprites->Begin();
+		//m_sprites->Draw(m_HorizontalRenderPass->getShaderResourceView(), m_CameraViewRect);
+		//m_sprites->End();
 
 	//render our GUI
 	ImGui::Render();
@@ -348,7 +350,7 @@ void Game::RenderToTexturePass()
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
 
-	//m_BasicModel3.Render(context);
+	m_BasicModel3.Render(context);
 
 	//trees
 
@@ -380,6 +382,20 @@ void Game::RenderToTexturePass()
 
 }
 
+void Game::RenderToTextureDownSample() 
+{
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto renderTargetView = m_deviceResources->GetRenderTargetView();
+	auto depthTargetView = m_deviceResources->GetDepthStencilView();
+
+	m_DownSamplePass->setRenderTarget(context);
+
+	m_DownSamplePass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
+
+	m_deviceResources->
+
+}
+
 void Game::RenderToTextureHorizontalBlur()
 {
 	auto context = m_deviceResources->GetD3DDeviceContext();
@@ -390,12 +406,15 @@ void Game::RenderToTextureHorizontalBlur()
 
 	m_HorizontalRenderPass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
 
+	
+
+	//m_sprites->Begin();
 	m_HorizontalBlurShaderPair.EnableShader(context);
 	m_HorizontalBlurShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView(), 800);
 
-	m_sprites->Begin();
-	m_sprites->Draw(m_FirstRenderPass->getShaderResourceView(), m_CameraViewRect);
-	m_sprites->End();
+	m_Window.Render(context);
+	//m_sprites->Draw(m_FirstRenderPass->getShaderResourceView(), m_CameraViewRect);
+	//m_sprites->End();
 
 	context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
 }
@@ -531,12 +550,19 @@ void Game::CreateDeviceDependentResources()
 
 	m_HorizontalBlurShaderPair.InitStandard(device, L"horizontalblur_vs.cso", L"horizontalblur_ps.cso");
 
+
+	m_Window.Initialize(device, 400, 300);
+
 	//load Textures
 	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"water.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
 
 	//Initialise Render to texture
 	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
+	m_HorizontalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
+	m_VerticalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
+	m_DownSamplePass = new RenderTexture(device, 400, 300, 1, 2);
+	m_UpSamplePass = new RenderTexture(device, 800, 600, 1, 2);
 
 }
 
