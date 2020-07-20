@@ -375,31 +375,32 @@ void Game::Render()
 
 	m_BasicModel3.Render(context);
 
+
+
 	//trees
 	
-		m_world = SimpleMath::Matrix::Identity; //set world back to identity
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 
-		int treeCount = m_Terrain.getNumberTrees();
+	int treeCount = m_Terrain.getNumberTrees();
 
-		for (int i = 0; i < treeCount; i++)
-		{
-			m_world = SimpleMath::Matrix::Identity;
-			float tempX = m_trees[i].x/10;
-			float tempY = m_trees[i].y/14.2 -4.7f ;
-			float tempZ = m_trees[i].z/10;
+	for (int i = 0; i < treeCount; i++)
+	{
+		m_world = SimpleMath::Matrix::Identity;
+		float tempX = m_trees[i].x/10;
+		float tempY = m_trees[i].y/14.2 -4.7f ;
+		float tempZ = m_trees[i].z/10;
 
 
-			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
-			newScale = SimpleMath::Matrix::CreateScale(0.1f,1.0f,0.1f);
-			m_world = m_world * newScale *newPosition3;
+		newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
+		newScale = SimpleMath::Matrix::CreateScale(0.1f,1.0f,0.1f);
+		m_world = m_world * newScale *newPosition3;
 
-			m_BasicShaderPair.EnableShader(context);
-			m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-			//if (tempY > -16)
-			//{
-				m_treeModels[i].Render(context);
-			//}
-		}
+		m_BasicShaderPair.EnableShader(context);
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+			
+		m_treeModels[i].Render(context);
+			
+	}
 
 
 
@@ -754,10 +755,10 @@ void Game::SetupGUI()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::Begin("Sin Wave Parameters");
-		ImGui::SliderFloat("Wave Amplitude",	m_Terrain.GetAmplitude(), 0.0f, 10.0f);
-		ImGui::SliderFloat("Wavelength",		m_Terrain.GetWavelength(), 0.0f, 1.0f);
-	ImGui::End();
+	//ImGui::Begin("Sin Wave Parameters");
+	//	ImGui::SliderFloat("Wave Amplitude",	m_Terrain.GetAmplitude(), 0.0f, 10.0f);
+	//	ImGui::SliderFloat("Wavelength",		m_Terrain.GetWavelength(), 0.0f, 1.0f);
+	//ImGui::End();
 }
 
 

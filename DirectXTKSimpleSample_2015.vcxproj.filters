@@ -74,6 +74,7 @@
     <ClInclude Include="OrthoWindowClass.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Forest.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -125,6 +126,7 @@
     <ClCompile Include="OrthoWindowClass.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Forest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

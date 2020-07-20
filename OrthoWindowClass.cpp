@@ -214,3 +214,4 @@ void OrthoWindowClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 	return;
 }
+7
