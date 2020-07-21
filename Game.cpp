@@ -380,8 +380,8 @@ void Game::Render()
 	//trees
 	
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-
-	int treeCount = m_Terrain.getNumberTrees();
+	//m_trees = m_forest1.getTrees();
+	int treeCount = m_forest1.getNumberTrees();
 
 	for (int i = 0; i < treeCount; i++)
 	{
@@ -680,11 +680,14 @@ void Game::CreateDeviceDependentResources()
 	m_Terrain.Initialize(device, 1000, 1000,25,23);
 	//m_Terrain.Initialize(device, 1000, 1000,25,25);
 
+	m_forest1.Initialize(1000, 1000);
 	
-	int treecount = m_Terrain.getNumberTrees();
+	int treecount = m_forest1.getNumberTrees();
+	//int treecount = m_Terrain.getNumberTrees();
 	m_treeModels = new ModelClass[treecount];
 	//m_Terrain.TreePlacement(5,370,370);
-	m_trees = m_Terrain.getTrees();
+	m_forest1.TreePlacement(m_Terrain.getHeightmap());
+	m_trees = m_forest1.getTrees();
 	for (size_t i = 0; i < treecount; i++)
 	{
 		m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
@@ -714,12 +717,16 @@ void Game::CreateDeviceDependentResources()
 	CreateDDSTextureFromFile(device, L"UfoTexture.dds", nullptr, m_texture3.ReleaseAndGetAddressOf());
 
 
+
+
+
+
 	//Initialise Render to texture
-	m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
-	m_HorizontalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
-	m_VerticalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
-	m_DownSamplePass = new RenderTexture(device, 400, 300, 1, 2);
-	m_UpSamplePass = new RenderTexture(device, 800, 600, 1, 2);
+	//m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
+	//m_HorizontalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
+	//m_VerticalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
+	//m_DownSamplePass = new RenderTexture(device, 400, 300, 1, 2);
+	//m_UpSamplePass = new RenderTexture(device, 800, 600, 1, 2);
 
 }
 

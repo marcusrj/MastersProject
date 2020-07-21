@@ -17,6 +17,7 @@
 #include <ctime>
 #include "HorizontalBlurShader.h"
 #include "OrthoWindowClass.h"
+#include "Forest.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -134,6 +135,8 @@ private:
 	DirectX::SimpleMath::Vector3*											m_trees;
 
 	OrthoWindowClass	m_Window;
+
+	Forest	m_forest1;
 
 
 

@@ -11,6 +11,11 @@ private:
 		DirectX::SimpleMath::Vector2 texture;
 		DirectX::SimpleMath::Vector3 normal;
 	};
+	
+
+	
+public:
+
 	struct HeightMapType
 	{
 		float x, y, z;
@@ -18,8 +23,6 @@ private:
 		float u, v;
 	};
 
-	
-public:
 	Terrain();
 	~Terrain();
 
@@ -35,6 +38,8 @@ public:
 	int getNumberTrees();
 
 	float getHeightAtPosition(int xin, int zin);
+
+	HeightMapType* getHeightmap();
 
 private:
 	bool CalculateNormals();

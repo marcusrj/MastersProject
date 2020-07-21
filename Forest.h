@@ -1,15 +1,17 @@
 #pragma once
 #include <time.h>
+#include "Terrain.h"
+using namespace DirectX;
 class Forest
 {
 	private:
 
-		struct HeightMapType
-		{
-			float x, y, z;
-			float nx, ny, nz;
-			float u, v;
-		};
+		//struct HeightMapType
+		//{
+		//	float x, y, z;
+		//	float nx, ny, nz;
+		//	float u, v;
+		//};
 
 	public:
 
@@ -20,9 +22,10 @@ class Forest
 		~Forest();
 		DirectX::SimpleMath::Vector3* getTrees();
 		int getNumberTrees();
-		void Forest::TreePlacement(int spacing, int forestX, int forestY);
-		void UpdateHeightmap(HeightMapType* heightMap);
-	
+		void TreePlacement(int spacing, int forestX, int forestY);
+		void TreePlacement(Terrain::HeightMapType* heightMap);
+		void UpdateHeightmap(Terrain::HeightMapType* heightMap);
+		void Initialize(int terrainWidth, int terrainHeight);
 	private:
 
 
@@ -34,7 +37,7 @@ class Forest
 		int m_noOfTrees;
 		int m_terrainWidth, m_terrainHeight;
 		DirectX::SimpleMath::Vector3* m_trees;
-		HeightMapType* m_heightMap;
+		Terrain::HeightMapType* m_heightMap;
 
 
 

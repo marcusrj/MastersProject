@@ -909,4 +909,7 @@ float Terrain::getHeightAtPosition(int xin, int zin)
 }
 
 
-
+Terrain::HeightMapType* Terrain::getHeightmap() 
+{
+	return m_heightMap;
+}
