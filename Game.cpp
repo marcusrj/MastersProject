@@ -373,7 +373,7 @@ void Game::Render()
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
 
-	m_BasicModel3.Render(context);
+	//m_BasicModel3.Render(context);
 
 
 
@@ -381,8 +381,9 @@ void Game::Render()
 	
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	//m_trees = m_forest1.getTrees();
-	int treeCount = m_forest1.getNumberTrees();
+	//int treeCount = m_forests[i].getNumberTrees();
 
+	int treeCount = m_treeCount;
 	for (int i = 0; i < treeCount; i++)
 	{
 		m_world = SimpleMath::Matrix::Identity;
@@ -667,32 +668,59 @@ void Game::GetDefaultSize(int& width, int& height) const
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-    auto context = m_deviceResources->GetD3DDeviceContext();
-    auto device = m_deviceResources->GetD3DDevice();
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto device = m_deviceResources->GetD3DDevice();
 
-    m_states = std::make_unique<CommonStates>(device);
-    m_fxFactory = std::make_unique<EffectFactory>(device);
-    m_sprites = std::make_unique<SpriteBatch>(context);
-    m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
+	m_states = std::make_unique<CommonStates>(device);
+	m_fxFactory = std::make_unique<EffectFactory>(device);
+	m_sprites = std::make_unique<SpriteBatch>(context);
+	m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
 
 	//setup our terrain (devicee, width, height, forest Width, forest Height) width and height are in number of trees
-	m_Terrain.Initialize(device, 1000, 1000,25,23);
+	m_Terrain.Initialize(device, 1000, 1000, 25, 23);
 	//m_Terrain.Initialize(device, 1000, 1000,25,25);
 
-	m_forest1.Initialize(1000, 1000);
-	
-	int treecount = m_forest1.getNumberTrees();
+	m_numForests = 3;
+
+	m_forests = new Forest[m_numForests];
+	int treecount = 0;
+	for (size_t i = 0; i < m_numForests; i++)
+	{
+		m_forests[i].Initialize(1000, 1000);
+		treecount += m_forests[i].getNumberTrees();
+		m_forests[i].TreePlacement(m_Terrain.getHeightmap());
+	}
+
+	m_treeCount = treecount;
+
 	//int treecount = m_Terrain.getNumberTrees();
 	m_treeModels = new ModelClass[treecount];
 	//m_Terrain.TreePlacement(5,370,370);
-	m_forest1.TreePlacement(m_Terrain.getHeightmap());
-	m_trees = m_forest1.getTrees();
+	m_trees = new Vector3[treecount];
+
+	int tempIndex = 0;
+	//int treeCounter = 0;
+	int forestSize = 0;
+	
+	for (size_t i = 0; i < m_numForests; i++)
+	{
+		//treeCounter = 0;
+		forestSize = m_forests[i].getNumberTrees();
+		for (size_t j = 0; j < forestSize; j++)
+		{
+			m_trees[tempIndex] = m_forests[i].m_trees[j];
+			tempIndex++;
+		}
+	}
+
 	for (size_t i = 0; i < treecount; i++)
 	{
 		m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 	}
-	
+
+
+
 	//setup our test model
 	m_BasicModel.InitializeSphere(device);
 	m_BasicModel2.InitializeModel(device,"drone.obj");

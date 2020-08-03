@@ -136,7 +136,9 @@ private:
 
 	OrthoWindowClass	m_Window;
 
-	Forest	m_forest1;
+	Forest*	m_forests;
+	int m_numForests;
+	int m_treeCount;
 
 
 
