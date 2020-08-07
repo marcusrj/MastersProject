@@ -5,16 +5,17 @@ using namespace DirectX;
 class Terrain
 {
 private:
+	
+	
+
+	
+public:
 	struct VertexType
 	{
 		DirectX::SimpleMath::Vector3 position;
 		DirectX::SimpleMath::Vector2 texture;
 		DirectX::SimpleMath::Vector3 normal;
 	};
-	
-
-	
-public:
 
 	struct HeightMapType
 	{

@@ -75,6 +75,7 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Forest.h" />
+    <ClInclude Include="AStar.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -127,6 +128,7 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Forest.cpp" />
+    <ClCompile Include="AStar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
