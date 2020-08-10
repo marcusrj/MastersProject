@@ -4,6 +4,15 @@
 class AStar
 {
 
+	struct RoadNode{
+		float x, y, z;
+		float costToParent;
+		float costToGoal;
+		RoadNode* parent;
+		RoadNode* child;
+	};
+
+	
 
 	AStar();
 	~AStar();
@@ -28,8 +37,8 @@ class AStar
 
 	float Cost(Terrain::HeightMapType p1, Terrain::HeightMapType p2);
 
-
-	
+	float AStar::Cost(int x1, int y1, int z1, int x2, int y2, int z2);
+	float AStar::DistanceXZ(int x1, int z1, int x2, int z2);
 
 };
 
