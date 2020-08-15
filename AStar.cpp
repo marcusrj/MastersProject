@@ -54,7 +54,10 @@ float AStar::Cost(int x1,int y1, int z1, int x2, int y2, int z2)
 }
 
 
-
+std::list<AStar::RoadNode> AStar::getRoad()
+{
+	return m_Road;
+}
 
 void AStar::firstRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2)
 {
@@ -149,13 +152,15 @@ void AStar::firstRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2)
 				next = *current.parent;
 				do
 				{
-
-					current = next;
 					Road.push_front(current);
-
-					next = *current.parent;
+					m_Road.push_front(current);
+					current = next;
+					if (current.parent != NULL)
+					{
+						next = *current.parent;
+					}
 					
-				} while (current.x != p1.x && current.z != p1.z);
+				} while ((current.x != p1.x || current.z != p1.z));
 			
 
 				return;

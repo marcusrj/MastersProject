@@ -18,6 +18,8 @@
 #include "HorizontalBlurShader.h"
 #include "OrthoWindowClass.h"
 #include "Forest.h"
+#include "AStar.h"
+
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -139,6 +141,8 @@ private:
 	Forest*	m_forests;
 	int m_numForests;
 	int m_treeCount;
+
+	AStar m_Road1;
 
 
 

@@ -720,6 +720,9 @@ void Game::CreateDeviceDependentResources()
 	}
 
 
+	Terrain::HeightMapType* Heightmap = m_Terrain.getHeightmap();
+	m_Road1.firstRoad(Heightmap[500],Heightmap[6500]);
+
 
 	//setup our test model
 	m_BasicModel.InitializeSphere(device);

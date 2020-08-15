@@ -3,7 +3,7 @@
 #include <list>
 class AStar
 {
-
+public:
 	struct RoadNode{
 		float x, y, z;
 		float costToParent;
@@ -20,7 +20,9 @@ class AStar
 	Terrain::HeightMapType* m_heightMap;
 	int m_terrainWidth, m_terrainHeight, m_indexCount;
 
-	std::list<Terrain::HeightMapType> m_Road;
+
+	std::list<AStar::RoadNode> m_Road;
+	//std::list<Terrain::HeightMapType> m_Road;
 	std::list<Terrain::HeightMapType> m_RoadNetwork;
 
 
@@ -31,6 +33,8 @@ class AStar
 	//p2 replaced with existing network
 
 	void newRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2);
+
+	std::list<AStar::RoadNode> AStar::getRoad();
 
 
 	float DistanceXZ(Terrain::HeightMapType p1, Terrain::HeightMapType p2);
