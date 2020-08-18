@@ -58,7 +58,8 @@ private:
 	float Spike(float t);
 	float EaseIn(float t);
 	float Lerp(float start_value, float end_value, float pct);
-
+	float LerpSpike(float t);
+	
 	int fastfloor(double x);
 	double dot(int g[], double x, double y);
 	

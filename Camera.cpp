@@ -58,7 +58,7 @@ void Camera::Update()
 
 	//apply camera vectors and create camera matrix
 	m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitY));
-
+	//m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitZ));
 
 }
 

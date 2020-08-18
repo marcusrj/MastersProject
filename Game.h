@@ -120,6 +120,7 @@ private:
 	ModelClass																m_BasicModel3;
 
 	ModelClass*																m_treeModels;
+	ModelClass*	m_RoadModels;
 	ModelClass																m_UFO;
 	ModelClass																m_Sphere;
 
@@ -142,7 +143,8 @@ private:
 	int m_numForests;
 	int m_treeCount;
 
-	AStar m_Road1;
+	AStar* m_Roads;
+	int m_totalpoints;
 
 
 

@@ -91,7 +91,7 @@ void Game::Initialize(HWND window, int width, int height)
 	//setup light
 	m_Light.setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
 	m_Light.setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light.setPosition(2.0f, 1.0f, 1.0f);
+	//m_Light.setPosition(5.0f, 100.0f, 5.0f);
 	m_Light.setDirection(-1.0f, -1.0f, 0.0f);
 
 	//setup camera
@@ -349,13 +349,11 @@ void Game::Render()
 		context->RSSetState(m_states->Wireframe());
 	}
 
-	//RenderToTexturePass();
-	//RenderToTextureHorizontalBlur();
 	
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
-	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1,0.07,0.1);		//scale the terrain down a little. 
+	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.2f,0.1f,0.2f);		//scale the terrain down a little. 
 	m_world = m_world * newScale *newPosition3;
 
 	
@@ -366,14 +364,14 @@ void Game::Render()
 
 	//Sea
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.0f, 10.0f);
+	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.7f, 10.0f);
 	newScale = SimpleMath::Matrix::CreateScale(30,1,30);
 	m_world = m_world * newScale *newPosition3;
 
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
 
-	//m_BasicModel3.Render(context);
+	m_BasicModel3.Render(context);
 
 
 
@@ -404,65 +402,44 @@ void Game::Render()
 	}
 
 
+	//roads
+	int tempindex = 0;
+	for (size_t i = 0; i < 5; i++)
+	{
 
-		//UFO Transformations
 
-		m_world = SimpleMath::Matrix::Identity; //set world back to identity
-		SimpleMath::Matrix newPosition = SimpleMath::Matrix::Identity;
+		int roadLength = m_Roads[i].m_Road.size();
+		std::list<AStar::RoadNode> Road = m_Roads[i].getRoad();
 
-		newPosition = SimpleMath::Matrix::CreateRotationY(UFORotY); // rotation
-		m_world = m_world * newPosition;
+		Terrain::HeightMapType* heightmap = m_Terrain.getHeightmap();
+
+
+		for (auto it = Road.begin(); it != Road.end(); it++)
+		{
+
+			m_world = SimpleMath::Matrix::Identity;
+			float tempX = it->x / 10;
+			float tempZ = it->z / 10;
+			int index = (1000 * it->z) + it->x;
+			float tempY = heightmap[index].y / 28.4 - 4.7f;
+
+
+			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
+			newScale = SimpleMath::Matrix::CreateScale(0.1f, 0.1f, 0.1f);
+			m_world = m_world * newScale *newPosition3;
+
+			m_BasicShaderPair.EnableShader(context);
+			m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+
+			m_RoadModels[tempindex].Render(context);
+			tempindex++;
+
+		}
+	}
+
 	
-		float ufoHeight = -4.7f + m_Terrain.getHeightAtPosition(UFOX, UFOZ);
-
-		newPosition = SimpleMath::Matrix::CreateScale(0.3f, 0.3f, 0.3f); //model too big so we need to scale it down
-		m_world = m_world * newPosition;
-
-		newPosition = SimpleMath::Matrix::CreateTranslation(UFOX/10, ufoHeight/14.2, UFOZ/10);
-		m_world = m_world * newPosition;
-
-		UFORotY = UFORotY + UFORotInc; // increment rotation
-
-		m_BasicShaderPair.EnableShader(context);
-		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture3.Get());
 
 
-		//m_world = m_world * newPosition;
-		m_UFO.Render(context);
-
-		//Sphere Transformations
-
-		m_world = SimpleMath::Matrix::Identity; //set world back to identity
-		newPosition = SimpleMath::Matrix::Identity;
-
-		newPosition = SimpleMath::Matrix::CreateRotationY(UFORotY); // rotation
-		m_world = m_world * newPosition;
-
-		float sphereHeight = -4.7f + m_Terrain.getHeightAtPosition(sphereX, sphereZ);
-
-		newPosition = SimpleMath::Matrix::CreateScale(0.5f, 0.5f, 0.5f); //model too big so we need to scale it down
-		m_world = m_world * newPosition;
-
-		newPosition = SimpleMath::Matrix::CreateTranslation(sphereX / 10, sphereHeight / 10, sphereZ / 10);
-		m_world = m_world * newPosition;
-
-		//UFORotY = UFORotY + UFORotInc; // increment rotation
-
-		m_BasicShaderPair.EnableShader(context);
-		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture3.Get());
-
-		m_Sphere.Render(context);
-
-		//newPosition = SimpleMath::Matrix::CreateTranslation(UFOX, -0.6f, UFOZ);
-
-
-		//m_HorizontalBlurShaderPair.EnableShader(context);
-		//m_HorizontalBlurShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView(), 800);
-		//m_Window.Render(context);
-
-		//m_sprites->Begin();
-		//m_sprites->Draw(m_HorizontalRenderPass->getShaderResourceView(), m_CameraViewRect);
-		//m_sprites->End();
 
 	//render our GUI
 	ImGui::Render();
@@ -471,113 +448,6 @@ void Game::Render()
     // Show the new frame.
     m_deviceResources->Present();
 }
-
-void Game::RenderToTexturePass()
-{
-
-	auto context = m_deviceResources->GetD3DDeviceContext();
-	auto renderTargetView = m_deviceResources->GetRenderTargetView();
-	auto depthTargetView = m_deviceResources->GetDepthStencilView();
-
-	m_FirstRenderPass->setRenderTarget(context);
-	m_FirstRenderPass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
-
-	//prepare transform for terrain object. 
-	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
-	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1, 0.1, 0.1);		//scale the terrain down a little. 
-	m_world = m_world * newScale *newPosition3;
-
-	m_BasicShaderPair.EnableShader(context);
-	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
-	m_Terrain.Render(context);
-
-	//Sea
-	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	newPosition3 = SimpleMath::Matrix::CreateTranslation(10.0f, -4.0f, 10.0f);
-	newScale = SimpleMath::Matrix::CreateScale(30, 1, 30);
-	m_world = m_world * newScale *newPosition3;
-
-	m_BasicShaderPair.EnableShader(context);
-	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-
-	m_BasicModel3.Render(context);
-
-	//trees
-
-	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-
-	int treeCount = m_Terrain.getNumberTrees();
-
-	for (int i = 0; i < treeCount; i++)
-	{
-		m_world = SimpleMath::Matrix::Identity;
-		float tempX = m_trees[i].x / 10;
-		float tempY = m_trees[i].y / 10 - 4.7f;
-		float tempZ = m_trees[i].z / 10;
-
-
-		newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
-		newScale = SimpleMath::Matrix::CreateScale(0.1f, 1.0f, 0.1f);
-		m_world = m_world * newScale *newPosition3;
-
-		m_BasicShaderPair.EnableShader(context);
-		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-		
-		m_treeModels[i].Render(context);
-
-	}
-
-	// Reset the render target back to the original back buffer and not the render to texture anymore.	
-	context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
-
-}
-
-void Game::RenderToTextureDownSample() 
-{
-	auto context = m_deviceResources->GetD3DDeviceContext();
-	auto renderTargetView = m_deviceResources->GetRenderTargetView();
-	auto depthTargetView = m_deviceResources->GetDepthStencilView();
-
-	m_DownSamplePass->setRenderTarget(context);
-
-	m_DownSamplePass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
-
-	//m_deviceResources->
-
-}
-
-void Game::RenderToTextureHorizontalBlur()
-{
-	auto context = m_deviceResources->GetD3DDeviceContext();
-	auto renderTargetView = m_deviceResources->GetRenderTargetView();
-	auto depthTargetView = m_deviceResources->GetDepthStencilView();
-
-	m_HorizontalRenderPass->setRenderTarget(context);
-
-	m_HorizontalRenderPass->clearRenderTarget(context, 0.0f, 0.0f, 1.0f, 1.0f);
-
-	
-
-	//m_sprites->Begin();
-	m_HorizontalBlurShaderPair.EnableShader(context);
-	m_HorizontalBlurShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_FirstRenderPass->getShaderResourceView(), 800);
-
-	m_Window.Render(context);
-	//m_sprites->Draw(m_FirstRenderPass->getShaderResourceView(), m_CameraViewRect);
-	//m_sprites->End();
-
-	context->OMSetRenderTargets(1, &renderTargetView, depthTargetView);
-}
-
-void Game::RenderToTextureVerticalBlur()
-{
-
-}
-
-
-
-
 
 
 
@@ -681,15 +551,17 @@ void Game::CreateDeviceDependentResources()
 	m_Terrain.Initialize(device, 1000, 1000, 25, 23);
 	//m_Terrain.Initialize(device, 1000, 1000,25,25);
 
-	m_numForests = 3;
+	m_numForests = 5;
 
 	m_forests = new Forest[m_numForests];
 	int treecount = 0;
 	for (size_t i = 0; i < m_numForests; i++)
 	{
 		m_forests[i].Initialize(1000, 1000);
+		Sleep(500);
 		treecount += m_forests[i].getNumberTrees();
 		m_forests[i].TreePlacement(m_Terrain.getHeightmap());
+		Sleep(100);
 	}
 
 	m_treeCount = treecount;
@@ -702,7 +574,7 @@ void Game::CreateDeviceDependentResources()
 	int tempIndex = 0;
 	//int treeCounter = 0;
 	int forestSize = 0;
-	
+
 	for (size_t i = 0; i < m_numForests; i++)
 	{
 		//treeCounter = 0;
@@ -721,7 +593,37 @@ void Game::CreateDeviceDependentResources()
 
 
 	Terrain::HeightMapType* Heightmap = m_Terrain.getHeightmap();
-	m_Road1.firstRoad(Heightmap[500],Heightmap[6500]);
+
+
+	srand(time(0));
+	const int roadPoints = 5;
+	int index[roadPoints+1];
+	
+	for (size_t i = 0; i < roadPoints+1; i++)
+	{
+		int tempX = 300 + rand() % 400;
+		int tempZ = 300 + rand() % 400;
+
+		index[i] = (1000 * tempX) + tempZ;
+	}
+
+	m_Roads = new AStar[roadPoints];
+
+	m_totalpoints = 0;
+
+	for (size_t i = 0; i < roadPoints; i++)
+	{
+		m_Roads[i].generateRoad(Heightmap[index[i]],Heightmap[index[i+1]],Heightmap);
+		m_totalpoints = m_totalpoints + m_Roads[i].m_Road.size();
+	}
+	
+	m_RoadModels = new ModelClass[m_totalpoints];
+
+	for (size_t i = 0; i < m_totalpoints; i++)
+	{
+		m_RoadModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
+	}
+
 
 
 	//setup our test model

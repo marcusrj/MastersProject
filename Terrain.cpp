@@ -498,11 +498,12 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 	}
 
 
+	
+	
 	Islandify();
-	MakeSomeNoise();
 	Faulting();
 	Islandify();
-   
+	//MakeSomeNoise();
 	
 	//Smooth();
 	
@@ -568,10 +569,10 @@ void Terrain::Faulting()
 	int index = 0;
 	int iterations = 3000;
 	
-	float displacement = 0.2f;
+	float displacement = 0.1f;
 
 	//used to decrement displacement to gradually decrease fault size making less artifacts in the terrain
-	float displacementInc = 0.1f / iterations;
+	float displacementInc = displacement / iterations;
 
 	//random seed
 	srand(time(0));
@@ -630,7 +631,7 @@ void Terrain::Faulting()
 					if (val < 0)
 					{
 						//lower on the other
-						m_heightMap[index].y -= displacement;
+						//m_heightMap[index].y -= displacement;
 					}
 				}
 				else if (faults % 2 == 1)
@@ -643,7 +644,7 @@ void Terrain::Faulting()
 					if (val < 0)
 					{
 						//raise on the other
-						m_heightMap[index].y += displacement;
+						//m_heightMap[index].y += displacement;
 					}
 				}
 			}
@@ -822,7 +823,7 @@ float Terrain::Flip(float x)
 */
 float Terrain::EaseIn(float t)
 {
-	return (t * t);
+	return pow(t,1.3);
 }
 
 /*
@@ -848,6 +849,15 @@ float Terrain::Lerp(float start_value, float end_value, float pct)
 	return (start_value + (end_value - start_value) * pct);
 }
 
+float Terrain::LerpSpike(float t)
+{
+	if (t <= .5f)
+		return Lerp(0,1, (t / .5f));
+
+	return Lerp(0,1,(Flip(t) / .5f));
+}
+
+
 /*
 	makes the terrain more island like. makes use of the febucci easing functions
 */
@@ -869,7 +879,7 @@ void Terrain::Islandify()
 
 		for (int y = 0; y <m_terrainHeight ; y++)
 		{
-			m_heightMap[index].y = m_heightMap[index].y += Lerp(0, 5, Spike(t1));
+			m_heightMap[index].y = m_heightMap[index].y  * Lerp(0, 3, Spike(t1));
 			
 			t1 += inc1;
 			index++;
@@ -885,7 +895,7 @@ void Terrain::Islandify()
 
 		for (int x = 0; x < m_terrainWidth; x++)
 		{
-			m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 5, Spike(t2));
+			m_heightMap[index].y = m_heightMap[index].y * Lerp(0, 3, Spike(t2));
 			
 			t2 += inc2;
 			index += m_terrainHeight;
