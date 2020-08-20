@@ -25,7 +25,7 @@ class Forest
 		void TreePlacement(int spacing, int forestX, int forestY);
 		void TreePlacement(Terrain::HeightMapType* heightMap);
 		void UpdateHeightmap(Terrain::HeightMapType* heightMap);
-		void Initialize(int terrainWidth, int terrainHeight);
+		void Initialize(int terrainWidth, int terrainHeight, Terrain::HeightMapType* heightMap,int seed);
 		DirectX::SimpleMath::Vector3* m_trees;
 	private:
 

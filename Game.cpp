@@ -137,7 +137,7 @@ void Game::Tick()
     {
         Update(m_timer);
     });
-	Sleep(10);
+	//Sleep(10);
 	//Render all game content. 
     Render();
 
@@ -316,7 +316,7 @@ void Game::Render()
 
 	
 	//jumping through hoops to concatenate strings and then convert to char array 
-	std::string s2 = std::to_string(score);
+	/*std::string s2 = std::to_string(score);
 	std::string s = "Score: " + s2;
 	s2 = std::to_string(UFOX);
 	s = s + " Saucer: ";
@@ -332,12 +332,12 @@ void Game::Render()
 
 	int n = s.length();
 	char* char_array = new char[n + 1];
-	strcpy(char_array, s.c_str());
+	strcpy(char_array, s.c_str());*/
 
 	
-    m_sprites->Begin();
-		m_font->DrawString(m_sprites.get(),char_array , XMFLOAT2(10, 10), Colors::Yellow);
-    m_sprites->End();
+    //m_sprites->Begin();
+		//m_font->DrawString(m_sprites.get(),'a' , XMFLOAT2(10, 10), Colors::Yellow);
+   // m_sprites->End();
 
 	//Set Rendering states. 
 	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
@@ -353,7 +353,7 @@ void Game::Render()
 	//prepare transform for terrain object. 
 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, -5.f, 0.0f);
-	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.2f,0.1f,0.2f);		//scale the terrain down a little. 
+	SimpleMath::Matrix newScale = SimpleMath::Matrix::CreateScale(0.1f,0.1f,0.1f);		//scale the terrain down a little. 
 	m_world = m_world * newScale *newPosition3;
 
 	
@@ -386,7 +386,8 @@ void Game::Render()
 	{
 		m_world = SimpleMath::Matrix::Identity;
 		float tempX = m_trees[i].x/10;
-		float tempY = m_trees[i].y/14.2 -4.7f ;
+		//float tempY = m_trees[i].y/14 -4.7f ;
+		float tempY = m_trees[i].y / 10 -4.7f;
 		float tempZ = m_trees[i].z/10;
 
 
@@ -404,7 +405,7 @@ void Game::Render()
 
 	//roads
 	int tempindex = 0;
-	for (size_t i = 0; i < 5; i++)
+	for (size_t i = 0; i < 10; i++)
 	{
 
 
@@ -413,27 +414,31 @@ void Game::Render()
 
 		Terrain::HeightMapType* heightmap = m_Terrain.getHeightmap();
 
-
-		for (auto it = Road.begin(); it != Road.end(); it++)
+		auto it = Road.begin();
+		for (int i = 0; i  < roadLength;  i++)
 		{
+			//int skip = i;
+			if (i % 2 == 0) {
+				m_world = SimpleMath::Matrix::Identity;
+				float tempX = it->x / 10;
+				float tempZ = it->z / 10;
+				int index = (1000 * it->z) + it->x;
+				float tempY = heightmap[index].y / 10 - 4.7f;
 
-			m_world = SimpleMath::Matrix::Identity;
-			float tempX = it->x / 10;
-			float tempZ = it->z / 10;
-			int index = (1000 * it->z) + it->x;
-			float tempY = heightmap[index].y / 28.4 - 4.7f;
 
+				newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
+				newScale = SimpleMath::Matrix::CreateScale(0.3f, 0.1f, 0.3f);
+				m_world = m_world * newScale *newPosition3;
 
-			newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
-			newScale = SimpleMath::Matrix::CreateScale(0.1f, 0.1f, 0.1f);
-			m_world = m_world * newScale *newPosition3;
+				m_BasicShaderPair.EnableShader(context);
+				m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+			}
+				m_RoadModels[tempindex].Render(context);
+				tempindex++;
+			
+			it++;
 
-			m_BasicShaderPair.EnableShader(context);
-			m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-
-			m_RoadModels[tempindex].Render(context);
-			tempindex++;
-
+			
 		}
 	}
 
@@ -551,17 +556,19 @@ void Game::CreateDeviceDependentResources()
 	m_Terrain.Initialize(device, 1000, 1000, 25, 23);
 	//m_Terrain.Initialize(device, 1000, 1000,25,25);
 
-	m_numForests = 5;
+	m_numForests = 20;
 
 	m_forests = new Forest[m_numForests];
 	int treecount = 0;
+	int randomSeed = 0;
 	for (size_t i = 0; i < m_numForests; i++)
 	{
-		m_forests[i].Initialize(1000, 1000);
-		Sleep(500);
+		m_forests[i].Initialize(1000, 1000, m_Terrain.getHeightmap(),randomSeed);
+		//Sleep(250);
 		treecount += m_forests[i].getNumberTrees();
 		m_forests[i].TreePlacement(m_Terrain.getHeightmap());
-		Sleep(100);
+		//Sleep(100);
+		randomSeed += 1111;
 	}
 
 	m_treeCount = treecount;
@@ -591,20 +598,23 @@ void Game::CreateDeviceDependentResources()
 		m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 	}
 
-
 	Terrain::HeightMapType* Heightmap = m_Terrain.getHeightmap();
 
-
 	srand(time(0));
-	const int roadPoints = 5;
-	int index[roadPoints+1];
-	
-	for (size_t i = 0; i < roadPoints+1; i++)
-	{
-		int tempX = 300 + rand() % 400;
-		int tempZ = 300 + rand() % 400;
+	const int roadPoints = 10;
+	int index[roadPoints + 1];
+	int heightmapI = 0;
 
-		index[i] = (1000 * tempX) + tempZ;
+	for (size_t i = 0; i < roadPoints + 1; i++)
+	{
+		do
+		{
+			int tempX = 200 + rand() % 600;
+			int tempZ = 200 + rand() % 600;
+
+			index[i] = (1000 * tempX) + tempZ;
+			heightmapI = (tempX * 1000) + tempZ;
+		} while (Heightmap[heightmapI].y <= 3.4f || Heightmap[heightmapI].y>= 20.f);
 	}
 
 	m_Roads = new AStar[roadPoints];
@@ -613,10 +623,10 @@ void Game::CreateDeviceDependentResources()
 
 	for (size_t i = 0; i < roadPoints; i++)
 	{
-		m_Roads[i].generateRoad(Heightmap[index[i]],Heightmap[index[i+1]],Heightmap);
+		m_Roads[i].generateRoad(Heightmap[index[i]], Heightmap[index[i + 1]], Heightmap);
 		m_totalpoints = m_totalpoints + m_Roads[i].m_Road.size();
 	}
-	
+
 	m_RoadModels = new ModelClass[m_totalpoints];
 
 	for (size_t i = 0; i < m_totalpoints; i++)
@@ -624,11 +634,9 @@ void Game::CreateDeviceDependentResources()
 		m_RoadModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 	}
 
-
-
 	//setup our test model
 	m_BasicModel.InitializeSphere(device);
-	m_BasicModel2.InitializeModel(device,"drone.obj");
+	m_BasicModel2.InitializeModel(device, "drone.obj");
 	m_BasicModel3.InitializeBox(device, 10.0f, 0.1f, 10.0f);	//box includes dimensions
 
 	//load and set up our Vertex and Pixel Shaders
@@ -641,25 +649,13 @@ void Game::CreateDeviceDependentResources()
 	//sphere for the player to collect
 	m_Sphere.InitializeSphere(device);
 
-	
+
 	m_Window.Initialize(device, 400, 300);
 
 	//load Textures
-	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
-	CreateDDSTextureFromFile(device, L"water.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"seafloor.dds", nullptr, m_texture1.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"water.dds", nullptr, m_texture2.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"UfoTexture.dds", nullptr, m_texture3.ReleaseAndGetAddressOf());
-
-
-
-
-
-
-	//Initialise Render to texture
-	//m_FirstRenderPass = new RenderTexture(device, 800, 600, 1, 2);	//for our rendering, We dont use the last two properties. but.  they cant be zero and they cant be the same. 
-	//m_HorizontalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
-	//m_VerticalRenderPass = new RenderTexture(device, 400, 300, 1, 2);
-	//m_DownSamplePass = new RenderTexture(device, 400, 300, 1, 2);
-	//m_UpSamplePass = new RenderTexture(device, 800, 600, 1, 2);
 
 }
 

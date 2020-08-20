@@ -499,11 +499,11 @@ bool Terrain::GenerateHeightMap(ID3D11Device* device)
 
 
 	
-	
+	MakeSomeNoise();
 	Islandify();
 	Faulting();
 	Islandify();
-	//MakeSomeNoise();
+	
 	
 	//Smooth();
 	
@@ -905,6 +905,23 @@ void Terrain::Islandify()
 		t2 = 0;
 		index = y;
 	}
+	index = 0;
+	for (int x = 0; x < m_terrainWidth; x++)
+	{
+
+		for (int y = 0; y < m_terrainHeight; y++)
+		{
+			if (m_heightMap[index].y <3.3f)
+			{
+				m_heightMap[index].y = 3.3f;
+			}
+		
+			index++;
+		}
+		
+	}
+
+
 }
 
 /*

@@ -66,12 +66,12 @@ Forest::~Forest()
 
 }
 
-void Forest::Initialize(int terrainWidth, int terrainHeight)
+void Forest::Initialize(int terrainWidth, int terrainHeight, Terrain::HeightMapType* heightmap,int seed)
 {
 	m_terrainHeight = terrainHeight;
 	m_terrainWidth = terrainWidth;
 
-	srand((unsigned)time(0));
+	srand((unsigned)time(0)+seed);
 
 	//Semi-random spacing
 	m_spacing = 5 + rand() % 3;
@@ -85,8 +85,17 @@ void Forest::Initialize(int terrainWidth, int terrainHeight)
 	//rough island width
 	int islandWidth = (terrainWidth / 5) * 2;
 
-	m_forestX = 300 + rand() % 400;
-	m_forestZ = 300 + rand() % 400;
+
+	int index = 0;
+	do
+	{
+		m_forestX = 200 + rand() % 600;
+		m_forestZ = 200 + rand() % 600;
+		index = (m_forestX * m_terrainHeight) + m_forestZ;
+	} while (heightmap[index].y <=3.4f);
+
+
+
 
 	//calulate number of trees
 	m_noOfTrees = m_forestWidth * m_forestHeight;
@@ -98,7 +107,7 @@ void Forest::Initialize(int terrainWidth, int terrainHeight)
 /*
 	Jittered grid tree placement
 
-	TODO *this should definitely be in its own class*
+	
 */
 void Forest::TreePlacement(int spacing, int forestX, int forestY)
 {

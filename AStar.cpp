@@ -45,11 +45,12 @@ float AStar::Cost(Terrain::HeightMapType p1, Terrain::HeightMapType p2)
 
 float AStar::Cost(float x1,float y1, float z1, float x2, float y2, float z2)
 {
-	float beta = 0.4 ;
+	float beta = 20 ;
 	float slope = ((y1 - y2) / DistanceXZ(x1,  z1,  x2,  z2));
 	slope = pow(slope,2);
 	slope = sqrt(slope);
 	float cost = DistanceXZ(x1, z1, x2, z2) + DistanceXZ(x1, z1, x2, z2);
+
 
 	//slope = change in y / change in x
 	return cost;
@@ -197,10 +198,10 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 	start.child = NULL;
 
 	L.push_back(start);
-
+	AStar::RoadNode* P = &start;
 	while (L.size() > 0)
 	{
-		AStar::RoadNode* P = &start;
+		
 		for (auto it = L.begin(); it != L.end(); it++)
 		{
 			if (P->costToGoal > it->costToGoal) {
@@ -210,7 +211,7 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 			}
 		}
 
-		RoadNode Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight;
+//		RoadNode Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight;
 		RoadNode neighbours[8];
 		int py;
 		neighbours[0].x = P->x;
@@ -255,20 +256,14 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 
 		for (size_t i = 0; i < 8; i++)
 		{	
-			bool contains = false;
-			for (auto it = Possibilities.begin(); it != Possibilities.end(); it++)
-			{
+			
+				//if (neighbours[i].y > 3.4f && neighbours[i].y < 28.5f)
+				//{
+					Possibilities.push_back(neighbours[i]);
+				//}
+			
 
-				if (it->x == neighbours[i].x && it->z == neighbours[i].z) {
-					contains = true;
-				}
-			}
-
-
-			if (contains == false)
-			{
-				Possibilities.push_back(neighbours[i]);
-			}
+				
 		}
 		
 		for (auto it = Possibilities.begin(); it != Possibilities.end(); it++)
@@ -310,24 +305,25 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 
 		for (auto it1 = Possibilities.begin(); it1 != Possibilities.end(); it1++)
 		{
-			bool contains = false;
-			for (auto it2 = L.begin(); it2 != L.end(); it2++)
-			{
+			//bool contains = false;
+			//for (auto it2 = L.begin(); it2 != L.end(); it2++)
+			//{
 
-				if (it1->x == it2->x && it1->z == it2->z) {
-					contains = true;
-					if (it1->costToGoal < it2->costToGoal) 
-					{
-						L.push_back(*it1);
-					}
-				}
-			}
+				//if (it1->x == it2->x && it1->z == it2->z) {
+					//contains = true;
+					//if (it1->costToGoal < it2->costToGoal) 
+					//{
+						//L.push_back(*it1);
+					//}
+				//}
+			//}
 
-
-			if (contains == false)
-			{
-				L.push_back(*it1);
-			}
+			
+				//if (contains == false)
+				//{
+					L.push_back(*it1);
+				//}
+			
 			
 		}
 
