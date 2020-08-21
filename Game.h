@@ -19,7 +19,7 @@
 #include "OrthoWindowClass.h"
 #include "Forest.h"
 #include "AStar.h"
-
+#include <iostream>
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.

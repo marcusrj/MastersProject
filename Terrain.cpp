@@ -61,7 +61,6 @@ bool Terrain::Initialize(ID3D11Device* device, int terrainWidth, int terrainHeig
 		}
 	}
 	GenerateHeightMap(device);
-	//TreePlacement(10,370,370);
 
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.

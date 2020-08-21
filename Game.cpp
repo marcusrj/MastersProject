@@ -5,7 +5,6 @@
 #include "pch.h"
 #include "Game.h"
 
-
 //toreorganise
 #include <fstream>
 
@@ -17,14 +16,12 @@ using namespace ImGui;
 
 using Microsoft::WRL::ComPtr;
 
-
-
 // rotations in radians
-float UFORotY, UFORotInc;
+//float UFORotY, UFORotInc;
 
-float UFOX, UFOZ, UFOInc;
-float sphereX, sphereZ;
-int score = 0;
+//float UFOX, UFOZ, UFOInc;
+//float sphereX, sphereZ;
+//int score = 0;
 
 Game::Game() noexcept(false)
 {
@@ -47,16 +44,16 @@ void Game::Initialize(HWND window, int width, int height)
 {
 
 	//Radians
-	UFORotY = 1.5f;
-	UFORotInc = 0.01f;
+	//UFORotY = 1.5f;
+	//UFORotInc = 0.01f;
 
 	//Saucer Positioning
-	UFOX = 150;
-	UFOZ = 150;
-	UFOInc = 1;
+	//UFOX = 150;
+	//UFOZ = 150;
+	//UFOInc = 1;
 
-	sphereX = 250;
-	sphereZ = 250;
+	//sphereX = 250;
+	//sphereZ = 250;
 
 	m_input.Initialise(window);
 
@@ -95,8 +92,8 @@ void Game::Initialize(HWND window, int width, int height)
 	m_Light.setDirection(-1.0f, -1.0f, 0.0f);
 
 	//setup camera
-	m_Camera01.setPosition(Vector3(20.0f, 10.0f, 4.0f));
-	m_Camera01.setRotation(Vector3(-90.0f, 0.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
+	m_Camera01.setPosition(Vector3(50.0f, 50.0f, 50.0f));
+	m_Camera01.setRotation(Vector3(-180.0f, 0.f, 0.f));	//orientation is -90 becuase zero will be looking up at the sky straight up. 
 
 
 	
@@ -196,7 +193,7 @@ void Game::Update(DX::StepTimer const& timer)
 		//int treecount = m_Terrain.getNumberTrees();
 		//m_treeModels = new ModelClass[treecount];
 		//m_trees = m_Terrain.getTrees();
-		m_Terrain.GenerateHeightMap(device);
+		//m_Terrain.GenerateHeightMap(device);
 		
 
 		//for (int i = 0; i < treecount; i++)
@@ -204,10 +201,14 @@ void Game::Update(DX::StepTimer const& timer)
 		//	m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 		//}
 	}
-
+	else
+	{
+		m_Camera01.Update();
+	}
 
 
 	//Saucer Movement
+	/*
 	if (m_gameInputCommands.playerForward)
 	{
 		if (UFOZ < 999)
@@ -247,10 +248,10 @@ void Game::Update(DX::StepTimer const& timer)
 			score++;
 		}
 	}
+	*/
 
 
-
-	m_Camera01.Update();	//camera update.
+	//camera update.
 	m_Terrain.Update();		//terrain update.  doesnt do anything at the moment. 
 	
 
@@ -543,6 +544,11 @@ void Game::GetDefaultSize(int& width, int& height) const
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
+
+	clock_t t;
+	t = clock();
+
+
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	auto device = m_deviceResources->GetD3DDevice();
 
@@ -556,7 +562,27 @@ void Game::CreateDeviceDependentResources()
 	m_Terrain.Initialize(device, 1000, 1000, 25, 23);
 	//m_Terrain.Initialize(device, 1000, 1000,25,25);
 
+	
+
+
+	
+	t = clock() - t;
+	std::string s = "Terrain Time: " + std::to_string(t)+ "\n";
+
+	int n = s.length();
+	char* char_array = new char[n + 1];
+	strcpy(char_array, s.c_str());
+
+	OutputDebugStringA(char_array);
+	
 	m_numForests = 20;
+
+
+
+
+	
+
+	
 
 	m_forests = new Forest[m_numForests];
 	int treecount = 0;
@@ -598,6 +624,21 @@ void Game::CreateDeviceDependentResources()
 		m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 	}
 
+	clock_t t2;
+	t2 = clock() - t;
+	s = "Tree Time: " + std::to_string(t2) + "\n";
+
+	 n = s.length();
+	 char_array = new char[n + 1];
+	strcpy(char_array, s.c_str());
+
+	OutputDebugStringA(char_array);
+
+
+
+
+	m_numForests = 20;
+
 	Terrain::HeightMapType* Heightmap = m_Terrain.getHeightmap();
 
 	srand(time(0));
@@ -614,7 +655,8 @@ void Game::CreateDeviceDependentResources()
 
 			index[i] = (1000 * tempX) + tempZ;
 			heightmapI = (tempX * 1000) + tempZ;
-		} while (Heightmap[heightmapI].y <= 3.4f || Heightmap[heightmapI].y>= 20.f);
+		} 
+		while (Heightmap[heightmapI].y <= 3.4f || Heightmap[heightmapI].y>= 20.f);
 	}
 
 	m_Roads = new AStar[roadPoints];
@@ -633,6 +675,22 @@ void Game::CreateDeviceDependentResources()
 	{
 		m_RoadModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 	}
+
+
+
+	clock_t t3;
+	t3 = clock() - t -t2;
+	s = "Road Time: " + std::to_string(t3) + "\n";
+
+	n = s.length();
+	char_array = new char[n + 1];
+	strcpy(char_array, s.c_str());
+
+	OutputDebugStringA(char_array);
+
+	
+
+
 
 	//setup our test model
 	m_BasicModel.InitializeSphere(device);

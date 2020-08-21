@@ -294,13 +294,11 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 					{
 						next = *current.parent;
 					}
-
-				} while ((current.x != p1.x || current.z != p1.z));
-
+				} 
+				while ((current.x != p1.x || current.z != p1.z));
 
 				return;
 			}
-
 		}
 
 		for (auto it1 = Possibilities.begin(); it1 != Possibilities.end(); it1++)
@@ -308,7 +306,6 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 			//bool contains = false;
 			//for (auto it2 = L.begin(); it2 != L.end(); it2++)
 			//{
-
 				//if (it1->x == it2->x && it1->z == it2->z) {
 					//contains = true;
 					//if (it1->costToGoal < it2->costToGoal) 
@@ -317,21 +314,14 @@ void AStar::generateRoad(Terrain::HeightMapType p1, Terrain::HeightMapType p2, T
 					//}
 				//}
 			//}
-
-			
 				//if (contains == false)
 				//{
 					L.push_back(*it1);
 				//}
-			
-			
 		}
-
 		//add posibilities to end of l
 		//L.splice(L.end(), Possibilities);
-
 		Possibilities.clear();
-
 	}
 
 }
