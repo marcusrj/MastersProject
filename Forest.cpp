@@ -15,7 +15,7 @@ Forest::Forest(int terrainHeight, int terrainWidth)
 	srand((unsigned)time(0));
 
 	//Semi-random spacing
-	m_spacing = 5 + rand() % 3;
+	m_spacing = 9 + rand() % 3;
 	
 	//Semi-random forest width
 	m_forestWidth = 4 + rand() % 4;
@@ -74,7 +74,7 @@ void Forest::Initialize(int terrainWidth, int terrainHeight, Terrain::HeightMapT
 	srand((unsigned)time(0)+seed);
 
 	//Semi-random spacing
-	m_spacing = 5 + rand() % 3;
+	m_spacing = 10 + rand() % 3;
 
 	//Semi-random forest width
 	m_forestWidth = 4 + rand() % 4;
@@ -92,7 +92,7 @@ void Forest::Initialize(int terrainWidth, int terrainHeight, Terrain::HeightMapT
 		m_forestX = 200 + rand() % 600;
 		m_forestZ = 200 + rand() % 600;
 		index = (m_forestX * m_terrainHeight) + m_forestZ;
-	} while (heightmap[index].y <=3.4f);
+	} while (heightmap[index].y <=4.2f);
 
 
 
@@ -197,8 +197,9 @@ void Forest::TreePlacement(Terrain::HeightMapType* heightmap)
 		for (int i = startX; i < endX; i += spacing)
 		{
 			//calculate jitter
-			int jitterX = j + (rand() % (spacing + 1) - (spacing - 2) / 2);
-			int jitterY = i + (rand() % (spacing + 1) - (spacing - 2) / 2);
+			int jitterX = j + (rand() % spacing-6);
+			//int jitterY = i + (rand() % (spacing + 1) - (spacing - 6) / 2);
+			int jitterY = i + (rand() % spacing-6);
 
 			//find point on terrain relative to tree
 			heightmapIndex = (jitterX * m_terrainHeight) + jitterY;

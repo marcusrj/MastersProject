@@ -109,6 +109,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture1;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture2;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture3;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texGreen;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texBlack;
+
 	//Shaders
 	Shader																	m_BasicShaderPair;
 	HorizontalBlurShader													m_HorizontalBlurShaderPair;

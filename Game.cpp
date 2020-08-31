@@ -393,14 +393,15 @@ void Game::Render()
 
 
 		newPosition3 = SimpleMath::Matrix::CreateTranslation(tempX, tempY, tempZ);
-		newScale = SimpleMath::Matrix::CreateScale(0.1f,1.0f,0.1f);
+		newScale = SimpleMath::Matrix::CreateScale(0.3f,1.0f,0.3f);
 		m_world = m_world * newScale *newPosition3;
 
 		m_BasicShaderPair.EnableShader(context);
-		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-			
-		m_treeModels[i].Render(context);
-			
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texGreen.Get());
+		
+		if (m_trees[i].y > 4.0f) {
+			m_treeModels[i].Render(context);
+		}
 	}
 
 
@@ -418,7 +419,7 @@ void Game::Render()
 		auto it = Road.begin();
 		for (int i = 0; i  < roadLength;  i++)
 		{
-			//int skip = i;
+			
 			if (i % 2 == 0) {
 				m_world = SimpleMath::Matrix::Identity;
 				float tempX = it->x / 10;
@@ -432,7 +433,7 @@ void Game::Render()
 				m_world = m_world * newScale *newPosition3;
 
 				m_BasicShaderPair.EnableShader(context);
-				m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
+				m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texBlack.Get());
 			}
 				m_RoadModels[tempindex].Render(context);
 				tempindex++;
@@ -700,7 +701,7 @@ void Game::CreateDeviceDependentResources()
 	//load and set up our Vertex and Pixel Shaders
 	m_BasicShaderPair.InitStandard(device, L"light_vs.cso", L"light_ps.cso");
 
-	m_HorizontalBlurShaderPair.InitStandard(device, L"horizontalblur_vs.cso", L"horizontalblur_ps.cso");
+	//m_HorizontalBlurShaderPair.InitStandard(device, L"horizontalblur_vs.cso", L"horizontalblur_ps.cso");
 
 	//our player controlled ufo
 	m_UFO.InitializeModel(device, "Ufo.obj");
@@ -708,12 +709,16 @@ void Game::CreateDeviceDependentResources()
 	m_Sphere.InitializeSphere(device);
 
 
-	m_Window.Initialize(device, 400, 300);
+	m_Window.Initialize(device, 1200, 900);
 
 	//load Textures
-	CreateDDSTextureFromFile(device, L"seafloor.dds", nullptr, m_texture1.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"green2.dds", nullptr, m_texture1.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"water.dds", nullptr, m_texture2.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"UfoTexture.dds", nullptr, m_texture3.ReleaseAndGetAddressOf());
+
+	CreateDDSTextureFromFile(device, L"red.dds", nullptr, m_texGreen.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"black.dds", nullptr, m_texBlack.ReleaseAndGetAddressOf());
+
 
 }
 
@@ -732,12 +737,19 @@ void Game::CreateWindowSizeDependentResources()
     }
 
     // This sample makes use of a right-handed coordinate system using row-major matrices.
-    m_projection = Matrix::CreatePerspectiveFieldOfView(
+
+	m_projection = Matrix::CreateOrthographic(
+		133,
+		100,
+		0.01f,
+		100.0f
+	);
+   /*m_projection = Matrix::CreatePerspectiveFieldOfView(
         fovAngleY,
         aspectRatio,
         0.01f,
         100.0f
-    );
+    );*/
 }
 
 
