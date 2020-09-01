@@ -6,6 +6,7 @@ public:
 	~Camera();
 
 	void							Update();
+	void							Camera::UpdateTopView();
 	DirectX::SimpleMath::Matrix		getCameraMatrix();
 	void							setPosition(DirectX::SimpleMath::Vector3 newPosition);
 	DirectX::SimpleMath::Vector3	getPosition();
@@ -14,6 +15,7 @@ public:
 	DirectX::SimpleMath::Vector3	getRotation();
 	float							getMoveSpeed();
 	float							getRotationSpeed();
+
 
 private:
 	DirectX::SimpleMath::Matrix		m_cameraMatrix;			//camera matrix to be passed out and used to set camera position and angle for wrestling

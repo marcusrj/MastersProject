@@ -200,9 +200,22 @@ void Game::Update(DX::StepTimer const& timer)
 		//{
 		//	m_treeModels[i].InitializeBox(device, 1.0f, 1.0f, 1.0f);
 		//}
+
+		m_projection = Matrix::CreateOrthographic(
+			133,
+			100,
+			0.01f,
+			100.0f
+		);
+
+		m_Camera01.UpdateTopView();
+
 	}
 	else
 	{
+
+		CreateWindowSizeDependentResources();
+
 		m_Camera01.Update();
 	}
 
@@ -738,18 +751,13 @@ void Game::CreateWindowSizeDependentResources()
 
     // This sample makes use of a right-handed coordinate system using row-major matrices.
 
-	m_projection = Matrix::CreateOrthographic(
-		133,
-		100,
+	
+	m_projection = Matrix::CreatePerspectiveFieldOfView(
+		fovAngleY,
+		aspectRatio,
 		0.01f,
 		100.0f
 	);
-   /*m_projection = Matrix::CreatePerspectiveFieldOfView(
-        fovAngleY,
-        aspectRatio,
-        0.01f,
-        100.0f
-    );*/
 }
 
 

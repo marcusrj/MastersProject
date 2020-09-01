@@ -46,25 +46,30 @@ Camera::~Camera()
 void Camera::Update()
 {
 	//rotation in yaw - using the paramateric equation of a circle
-	//m_forward.x = sin((m_orientation.y)*3.1415f / 180.0f);
-	//m_forward.z = cos((m_orientation.y)*3.1415f / 180.0f);
-	//m_forward.Normalize();
+	m_forward.x = sin((m_orientation.y)*3.1415f / 180.0f);
+	m_forward.z = cos((m_orientation.y)*3.1415f / 180.0f);
+	m_forward.Normalize();
 
 	//create right vector from look Direction
-	//m_forward.Cross(DirectX::SimpleMath::Vector3::UnitY, m_right);
-	//m_forward.Cross(DirectX::SimpleMath::Vector3::UnitZ, m_right);
-	m_forward.Cross(DirectX::SimpleMath::Vector3::UnitZ, m_right);
+	m_forward.Cross(DirectX::SimpleMath::Vector3::UnitY, m_right);
+
 	//update lookat point
-	//m_lookat = m_position + m_forward;
-	//m_lookat = DirectX::SimpleMath::Vector3(100, 0, 100);
+	m_lookat = m_position + m_forward;
+
 	//apply camera vectors and create camera matrix
-	//m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitY));
-	//m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitZ));
-	//m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitX));
+	m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitY));
 
 
+	m_position.y = 7;
 
+	
+}
+
+void Camera::UpdateTopView()
+{
 	m_position.y = 50;
+	m_position.x = 50;
+	m_position.z = 50;
 	m_lookat = m_position;
 	m_lookat.y = m_lookat.y - 50;
 	m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitZ));
